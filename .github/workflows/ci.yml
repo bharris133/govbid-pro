@@ -101,7 +101,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results
           path: |
@@ -183,7 +183,7 @@ jobs:
           curl -fsS http://localhost:8080/health/ready
           test "$(docker exec web id -u)" != "0"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: sbom
           path: sbom.spdx.json
