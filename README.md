@@ -29,12 +29,32 @@ GovBid Pro does not submit proposals to any agency, does not certify compliance 
 - Node.js 22 (`.nvmrc`) and npm
 - PostgreSQL 16 (or Docker)
 
+On Windows, `.\setup-windows.ps1` checks these and can install them; see [docs/LOCAL_SETUP.md](docs/LOCAL_SETUP.md).
+
 ## Run locally
+
+### Windows (Docker Desktop + WSL 2)
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\setup-windows.ps1            # report installed tools; add -Install to install missing ones with winget
+.\start-local.ps1              # create .env with a random DB password, build, start, wait until ready
+.\verify-local.ps1             # containers, database, migrations, health endpoints
+# open http://localhost:8080, register an account, then create your company
+```
+
+No Azure credentials or deployed Azure resources are needed. The full guide covers prerequisites, environment variables, migrations, the first administrator account, logs, stop/restart, reset and troubleshooting: [docs/LOCAL_SETUP.md](docs/LOCAL_SETUP.md).
+
+`.env` holds local-only settings and is ignored by Git; [.env.example](.env.example) lists the variables with placeholder values. Never commit real credentials.
+
+### Any OS with Docker
 
 ```bash
 docker compose up --build -d
 # open http://localhost:8080, create an account, then create your company
 ```
+
+Without a `.env` file Compose falls back to a fixed local-only database password; copy `.env.example` to `.env` and set your own to avoid that.
 
 Without Docker, start PostgreSQL with the credentials in `src/GovBidPro.Web/appsettings.Development.json` (local-only), then:
 
@@ -69,5 +89,6 @@ src/GovBidPro.Web             API controllers, Razor Pages, middleware
 ClientApp/src                 strict TypeScript (compiled to src/GovBidPro.Web/wwwroot/dist)
 tests/                        unit, integration, API and browser tests
 infra/                        Azure Bicep skeleton
-docs/                         architecture, ADRs, gates, threat model, runbook
+docs/                         architecture, ADRs, gates, threat model, runbook, local setup
+*.ps1, scripts/               Windows local development scripts (see docs/LOCAL_SETUP.md)
 ```
