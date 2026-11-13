@@ -24,7 +24,9 @@ internal sealed class ProblemDetailsExceptionHandler(IProblemDetailsService prob
 
         if (status == StatusCodes.Status500InternalServerError)
         {
-            logger.LogError(exception, "Unhandled exception for {Path}", httpContext.Request.Path);
+            // Log the server-defined endpoint rather than the raw request path, so client input never reaches the log line.
+            var endpoint = httpContext.GetEndpoint()?.DisplayName ?? "(no endpoint)";
+            logger.LogError(exception, "Unhandled exception in {Endpoint} (trace {TraceId})", endpoint, httpContext.TraceIdentifier);
         }
 
         httpContext.Response.StatusCode = status;
