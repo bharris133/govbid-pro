@@ -7,8 +7,9 @@ param webIdentityPrincipalId string
 @description('PostgreSQL connection string for the application, stored as a Key Vault secret.')
 param databaseConnectionString string
 
-var keyVaultSecretsUser = '4633458b-17de-408a-b874-0445c86b69e6'
-var keyVaultCryptoUser = '12338af0-0e69-4776-bea7-57ae8d297424'
+// Public Azure built-in role definition IDs (Key Vault Secrets User, Key Vault Crypto User), not secrets.
+var keyVaultSecretsUser = '4633458b-17de-408a-b874-0445c86b69e6' // gitleaks:allow
+var keyVaultCryptoUser = '12338af0-0e69-4776-bea7-57ae8d297424' // gitleaks:allow
 
 resource vault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: take('${replace(namePrefix, '-', '')}kv${uniqueString(resourceGroup().id)}', 24)
