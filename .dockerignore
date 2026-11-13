@@ -12,3 +12,7 @@ infra/
 docs/
 tests/
 *.md
+.env
+.env.*
+*.ps1
+scripts/

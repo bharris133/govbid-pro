@@ -4,6 +4,8 @@
 
 ## Local development
 
+Windows step-by-step guide (setup, start, verify, first administrator, reset, troubleshooting): [../LOCAL_SETUP.md](../LOCAL_SETUP.md).
+
 ```bash
 docker compose up --build -d      # PostgreSQL + web at http://localhost:8080 (Development, fixture data)
 ```

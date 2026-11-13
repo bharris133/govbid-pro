@@ -1,4 +1,6 @@
 # Local development only. Not a production deployment description (production targets Azure; see infra/).
+# Values come from .env (see .env.example). On Windows, .\start-local.ps1 creates .env with a random
+# database password. See docs/LOCAL_SETUP.md.
 name: govbid-pro
 
 services:
@@ -10,7 +12,7 @@ services:
       # Local-only development credential. Never reuse outside your machine.
       POSTGRES_PASSWORD: ${GOVBID_LOCAL_DB_PASSWORD:-govbid_local_dev}
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${GOVBID_DB_PORT:-5432}:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
@@ -32,7 +34,7 @@ services:
       ConnectionStrings__GovBidPro: Host=db;Port=5432;Database=govbidpro;Username=govbid;Password=${GOVBID_LOCAL_DB_PASSWORD:-govbid_local_dev}
       Storage__LocalRootPath: /data/storage
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:${GOVBID_WEB_PORT:-8080}:8080"
     volumes:
       - storage-data:/data/storage
 

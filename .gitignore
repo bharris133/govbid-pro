@@ -1,18 +1,82 @@
-bin/
-obj/
-node_modules/
-src/GovBidPro.Web/wwwroot/dist/
-*.user
-.vs/
-.idea/
-TestResults/
-test-results/
-playwright-report/
+# GovBid Pro - .NET 10 / ASP.NET Core / TypeScript / Docker / Azure Bicep
+# Keep tracked: EF Core migrations, package-lock.json, packages.lock.json, global.json,
+# Directory.Packages.props, Dockerfile, compose.yaml, Bicep templates and .env.example.
+
+# --- Secrets and local environment (commit .env.example only) ---
 .env
 .env.*
 !.env.example
+!.env.*.example
+*.local
 *.local.json
 appsettings.*.local.json
+appsettings.Local.json
+appsettings.*.Local.json
+secrets.json
+*.pfx
+*.p12
+*.pem
+*.key
+*.cer
+*.crt
+*.publishsettings
+*.pubxml.user
+
+# --- .NET build, packages and test output ---
+bin/
+obj/
+TestResults/
+artifacts/
+publish/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.nupkg
+*.snupkg
+coverage/
+*.coverage
+*.coveragexml
+coverage.cobertura.xml
+coverage.opencover.xml
+
+# --- IDEs and editors ---
+.vs/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+.idea/
+*.sln.iml
+_ReSharper*/
+*.DotSettings.user
+
+# --- TypeScript / Node ---
+node_modules/
+src/GovBidPro.Web/wwwroot/dist/
+*.tsbuildinfo
+npm-debug.log*
+test-results/
+playwright-report/
+
+# --- Logs, caches and OS files ---
+*.log
+logs/
+.tmp/
+.cache/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --- Local data: document storage, database files, emulators ---
 .local-storage/
+postgres_data/
+.pgdata/
+local-data/
+local-uploads/
+.azurite/
+
+# --- Infrastructure ---
+# Compiled Bicep output (ARM JSON) is generated, not source.
 infra/**/*.json
 !infra/**/bicepconfig.json
