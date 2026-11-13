@@ -117,11 +117,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          persist-credentials: false
 
       - name: Secret detection (gitleaks, working tree)
         run: |
-          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.24.3 dir /repo --config /repo/.gitleaks.toml --redact --exit-code 1
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.24.3 dir /repo --config /repo/.gitleaks.toml --redact --verbose --exit-code 1
 
       - uses: actions/setup-dotnet@v4
         with:

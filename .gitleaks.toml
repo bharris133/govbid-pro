@@ -13,6 +13,7 @@ regexes = [
   '''Api-Test-Passw0rd!''',
 ]
 paths = [
+  '''(^|/)\.git/''',
   '''package-lock\.json''',
   '''packages\.lock\.json''',
 ]
