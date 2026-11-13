@@ -1,0 +1,18 @@
+# Secret scanning configuration. Extends the default gitleaks rules.
+# The allowlisted values are local-development and CI-only credentials for throwaway databases
+# and test accounts. They grant access to nothing outside a developer machine or a CI runner.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Known non-secret local/CI test credentials"
+regexes = [
+  '''govbid_local_dev''',
+  '''ci_only_password''',
+  '''Smoke-Test-Passw0rd!''',
+  '''Api-Test-Passw0rd!''',
+]
+paths = [
+  '''package-lock\.json''',
+  '''packages\.lock\.json''',
+]

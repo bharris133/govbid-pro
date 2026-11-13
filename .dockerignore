@@ -1,0 +1,14 @@
+**/bin/
+**/obj/
+**/node_modules/
+**/TestResults/
+src/GovBidPro.Web/wwwroot/dist/
+test-results/
+playwright-report/
+.git/
+.github/
+.local-storage/
+infra/
+docs/
+tests/
+*.md

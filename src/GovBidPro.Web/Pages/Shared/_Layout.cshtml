@@ -1,0 +1,52 @@
+@using Microsoft.AspNetCore.Identity
+@using GovBidPro.Infrastructure.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@{
+    var csrf = Xsrf.GetAndStoreTokens(Context).RequestToken;
+    var pageName = ViewData["Page"] as string ?? "static";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content="@csrf" />
+    <title>@(ViewData["Title"] is string t ? $"{t} · GovBid Pro" : "GovBid Pro")</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body data-page="@pageName">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <header class="site-header">
+        <nav aria-label="Primary">
+            <a class="brand" href="/">GovBid Pro</a>
+            <ul>
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <li><a href="/Opportunities">Opportunities</a></li>
+                    <li><a href="/Documents">Documents</a></li>
+                    <li><a href="/Identity/Account/Manage">Account</a></li>
+                    <li>
+                        <form method="post" action="/Identity/Account/Logout?returnUrl=%2F">
+                            <button type="submit" class="link-button">Sign out</button>
+                        </form>
+                    </li>
+                }
+                else
+                {
+                    <li><a href="/Identity/Account/Login">Sign in</a></li>
+                    <li><a href="/Identity/Account/Register">Create account</a></li>
+                }
+                <li><a href="/DataPolicy">Data policy</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main id="main" tabindex="-1">
+        @RenderBody()
+    </main>
+    <footer class="site-footer">
+        <p>GovBid Pro does not submit proposals to any agency and holds no FedRAMP, CMMC or Section 508 certification. Do not upload FCI, CUI or classified information. <a href="/DataPolicy">Read the data policy</a>.</p>
+    </footer>
+    <script type="module" src="~/dist/main.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

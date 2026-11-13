@@ -1,0 +1,201 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: "1"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+
+jobs:
+  build-test:
+    name: Build, typecheck and test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: govbid
+          POSTGRES_PASSWORD: ci_only_password
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U govbid"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      GOVBID_TEST_POSTGRES: Host=localhost;Port=5432;Username=govbid;Password=ci_only_password;Database=postgres
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install client dependencies (locked)
+        run: npm ci
+
+      - name: TypeScript typecheck (strict)
+        run: npm run typecheck
+
+      - name: Build TypeScript client
+        run: npm run build:client
+
+      - name: Restore .NET (locked)
+        run: |
+          dotnet tool restore
+          dotnet restore GovBidPro.sln --locked-mode
+
+      - name: Verify C# formatting
+        run: dotnet format GovBidPro.sln --verify-no-changes --no-restore
+
+      - name: Build (Release, warnings as errors)
+        run: dotnet build GovBidPro.sln -c Release --no-restore
+
+      - name: Verify migrations match the model
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+        run: dotnet ef migrations has-pending-model-changes -p src/GovBidPro.Infrastructure -s src/GovBidPro.Web --no-build --configuration Release
+
+      - name: Unit, integration and API tests
+        run: dotnet test GovBidPro.sln -c Release --no-build --logger "trx" --results-directory TestResults
+
+      - name: Start app with fixture data for browser smoke test
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+          ASPNETCORE_URLS: http://localhost:5080
+          ConnectionStrings__GovBidPro: Host=localhost;Port=5432;Database=govbid_smoke;Username=govbid;Password=ci_only_password
+          Storage__LocalRootPath: ${{ runner.temp }}/govbid-storage
+        run: |
+          PGPASSWORD=ci_only_password psql -h localhost -U govbid -d postgres -c "CREATE DATABASE govbid_smoke"
+          nohup dotnet run --project src/GovBidPro.Web -c Release --no-build > "$RUNNER_TEMP/web.log" 2>&1 &
+          for i in $(seq 1 60); do curl -fsS http://localhost:5080/health/ready && break; sleep 2; done
+          curl -fsS http://localhost:5080/health/ready
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser smoke tests (TypeScript Playwright)
+        env:
+          GOVBID_BASE_URL: http://localhost:5080
+          CI: "true"
+        run: npm run test:browser -- --trace off
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            TestResults
+            playwright-report
+            ${{ runner.temp }}/web.log
+          if-no-files-found: ignore
+
+  security:
+    name: Dependency and secret scanning
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Secret detection (gitleaks, working tree)
+        run: |
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.24.3 dir /repo --config /repo/.gitleaks.toml --redact --exit-code 1
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: .NET vulnerable packages (fail on any)
+        run: |
+          dotnet restore GovBidPro.sln --locked-mode
+          dotnet list GovBidPro.sln package --vulnerable --include-transitive | tee vulnerable.txt
+          if grep -q "has the following vulnerable packages" vulnerable.txt; then exit 1; fi
+
+      - name: npm audit (high and critical)
+        run: |
+          npm ci --ignore-scripts
+          npm audit --audit-level=high
+
+
+  container:
+    name: Container build, SBOM and scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    needs: build-test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t govbidpro-web:${{ github.sha }} .
+
+      - name: Generate SBOM (SPDX)
+        uses: anchore/sbom-action@v0
+        with:
+          image: govbidpro-web:${{ github.sha }}
+          format: spdx-json
+          output-file: sbom.spdx.json
+
+      - name: Vulnerability scan (fail on critical)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: govbidpro-web:${{ github.sha }}
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Container smoke test (health)
+        run: |
+          docker network create gbp
+          docker run -d --name db --network gbp -e POSTGRES_USER=govbid -e POSTGRES_PASSWORD=ci_only_password -e POSTGRES_DB=govbidpro postgres:16-alpine
+          for i in $(seq 1 30); do docker exec db pg_isready -U govbid && break; sleep 2; done
+          docker run -d --name web --network gbp -p 8080:8080 \
+            -e ASPNETCORE_ENVIRONMENT=Development \
+            -e "ConnectionStrings__GovBidPro=Host=db;Database=govbidpro;Username=govbid;Password=ci_only_password" \
+            -e Storage__LocalRootPath=/tmp/storage \
+            govbidpro-web:${{ github.sha }}
+          for i in $(seq 1 60); do curl -fsS http://localhost:8080/health/ready && break; sleep 2; done
+          curl -fsS http://localhost:8080/health/ready
+          test "$(docker exec web id -u)" != "0"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.spdx.json
+
+  infrastructure:
+    name: Bicep build (no deployment)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile Bicep templates and parameter files
+        run: |
+          az bicep install
+          az bicep build --file infra/main.bicep --stdout > /dev/null
+          for p in infra/environments/*.bicepparam; do az bicep build-params --file "$p" --stdout > /dev/null; done

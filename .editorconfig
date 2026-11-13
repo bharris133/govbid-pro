@@ -1,0 +1,47 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{json,yml,yaml,ts,css,bicep,bicepparam,md,props,csproj}]
+indent_size = 2
+
+[*.cs]
+csharp_style_namespace_declarations = file_scoped:warning
+dotnet_sort_system_directives_first = true
+csharp_style_var_for_built_in_types = true:suggestion
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
+# Async suffix is not required for controller actions and test methods.
+dotnet_diagnostic.CA1707.severity = none
+# ConfigureAwait is not required in ASP.NET Core application code.
+dotnet_diagnostic.CA2007.severity = none
+# Localization of exception text is out of scope for P0.
+dotnet_diagnostic.CA1303.severity = none
+# EF navigation collections and DTO lists are intentionally settable/concrete.
+dotnet_diagnostic.CA2227.severity = none
+dotnet_diagnostic.CA1002.severity = none
+# Domain uses Guid/strings for identifiers and URLs from external sources (stored verbatim for provenance).
+dotnet_diagnostic.CA1056.severity = none
+dotnet_diagnostic.CA1054.severity = none
+dotnet_diagnostic.CA1055.severity = none
+# Logging: prefer LoggerMessage in hot paths later; allow structured ILogger calls in P0.
+dotnet_diagnostic.CA1848.severity = none
+dotnet_diagnostic.CA1873.severity = none
+# Test classes / generated migrations
+[tests/**.cs]
+dotnet_diagnostic.CA1515.severity = none
+dotnet_diagnostic.CA1861.severity = none
+dotnet_diagnostic.CA1062.severity = none
+dotnet_diagnostic.CA2000.severity = none
+dotnet_diagnostic.CA1001.severity = none
+dotnet_diagnostic.CA1849.severity = none
+
+[src/**/Migrations/*.cs]
+generated_code = true
+dotnet_diagnostic.CA1861.severity = none
+dotnet_diagnostic.IDE0161.severity = none
