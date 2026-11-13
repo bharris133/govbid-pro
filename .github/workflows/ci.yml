@@ -39,7 +39,7 @@ jobs:
     env:
       GOVBID_TEST_POSTGRES: Host=localhost;Port=5432;Username=govbid;Password=ci_only_password;Database=postgres
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-dotnet@v4
         with:
@@ -115,7 +115,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -149,7 +149,7 @@ jobs:
     timeout-minutes: 20
     needs: build-test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build image
         run: docker build -t govbidpro-web:${{ github.sha }} .
@@ -193,7 +193,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Compile Bicep templates and parameter files
         run: |
           az bicep install
