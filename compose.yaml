@@ -1,0 +1,43 @@
+# Local development only. Not a production deployment description (production targets Azure; see infra/).
+# Values come from .env (see .env.example). On Windows, .\start-local.ps1 creates .env with a random
+# database password. See docs/LOCAL_SETUP.md.
+name: govbid-pro
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: govbidpro
+      POSTGRES_USER: govbid
+      # Local-only development credential. Never reuse outside your machine.
+      POSTGRES_PASSWORD: ${GOVBID_LOCAL_DB_PASSWORD:-govbid_local_dev}
+    ports:
+      - "127.0.0.1:${GOVBID_DB_PORT:-5432}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U govbid -d govbidpro"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  web:
+    build:
+      context: .
+      args:
+        NODE_IMAGE: ${GOVBID_NODE_IMAGE:-node:22-bookworm-slim@sha256:e9f565d32859f0cbfb52125eafe8be39390f24dac302dc3cdf566e8ba3ab21ee}
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__GovBidPro: Host=db;Port=5432;Database=govbidpro;Username=govbid;Password=${GOVBID_LOCAL_DB_PASSWORD:-govbid_local_dev}
+      Storage__LocalRootPath: /data/storage
+    ports:
+      - "127.0.0.1:${GOVBID_WEB_PORT:-8080}:8080"
+    volumes:
+      - storage-data:/data/storage
+
+volumes:
+  db-data:
+  storage-data:

@@ -1,0 +1,30 @@
+@page
+@model GovBidPro.Web.Pages.Documents.IndexModel
+@{
+    ViewData["Title"] = "Documents";
+    ViewData["Page"] = "documents";
+}
+<h1>Documents</h1>
+<p class="notice warning"><strong>Do not upload classified information, CUI or safeguarded FCI.</strong> Files with security markings are rejected. <a href="/DataPolicy">Read the data policy</a>.</p>
+
+<form id="upload-form" class="panel" enctype="multipart/form-data">
+    <h2>Upload a document</h2>
+    <div class="field">
+        <label for="u-file">File (PDF, DOCX, XLSX, TXT, CSV, PNG or JPG)</label>
+        <input id="u-file" name="file" type="file" required accept=".pdf,.docx,.xlsx,.txt,.csv,.png,.jpg,.jpeg" />
+    </div>
+    <fieldset>
+        <legend>Classification</legend>
+        <label><input type="radio" name="classification" value="ConfidentialCommercial" checked /> Confidential commercial (proposal drafts, pricing, past performance)</label>
+        <label><input type="radio" name="classification" value="BusinessInternal" /> Business internal (company profile, internal process)</label>
+    </fieldset>
+    <label class="check"><input type="checkbox" name="affirmPermittedToUpload" value="true" required /> I am permitted to upload this file to GovBid Pro.</label>
+    <label class="check"><input type="checkbox" name="affirmNoProhibitedContent" value="true" required /> This file contains no classified information, CUI or FCI that must be safeguarded.</label>
+    <button type="submit">Upload</button>
+    <p id="upload-status" role="status" aria-live="polite"></p>
+</form>
+
+<section aria-labelledby="docs-heading">
+    <h2 id="docs-heading">Your company's documents</h2>
+    <div id="documents"></div>
+</section>

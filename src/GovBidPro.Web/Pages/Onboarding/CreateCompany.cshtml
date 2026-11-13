@@ -1,0 +1,15 @@
+@page
+@model GovBidPro.Web.Pages.Onboarding.CreateCompanyModel
+@{
+    ViewData["Title"] = "Create your company";
+}
+<h1>Create your company</h1>
+<p>Your company workspace keeps your saved searches, documents and proposals separate from every other company.</p>
+<form method="post" class="panel">
+    <div asp-validation-summary="All" class="error"></div>
+    <div class="field">
+        <label asp-for="CompanyName">Company name</label>
+        <input asp-for="CompanyName" required maxlength="200" />
+    </div>
+    <button type="submit">Create company</button>
+</form>

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\GovBidPro.Domain\GovBidPro.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Application uses EF Core abstractions (DbSet/IQueryable) only; no provider-specific code. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+</Project>
