@@ -1,4 +1,3 @@
-using Azure.Identity;
 using GovBidPro.Application.Abstractions;
 using GovBidPro.Application.Ai;
 using GovBidPro.Application.Auditing;
@@ -61,27 +60,37 @@ public static class DependencyInjection
             .Validate(o => !o.PlatformEnabled || !string.Equals(o.Provider, "Fake", StringComparison.OrdinalIgnoreCase) || environment.IsEnvironment(TestingEnvironment), "Ai:Provider Fake is only allowed in the Testing environment.")
             .Validate(o => !o.PlatformEnabled || string.Equals(o.Provider, "Fake", StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(o.Ai01ApprovalReference), "Ai:PlatformEnabled requires a recorded AI-01 approval reference.")
             .ValidateOnStart();
+        var isLocalEnvironment = environment.IsDevelopment() || environment.IsEnvironment(TestingEnvironment);
         services.AddOptions<StorageOptions>().Bind(configuration.GetSection(StorageOptions.SectionName))
-            .Validate(o => o.Provider is "AzureBlob" || (o.Provider is "Local" && (environment.IsDevelopment() || environment.IsEnvironment(TestingEnvironment))), "Storage:Provider must be AzureBlob outside Development/Testing.")
-            .Validate(o => o.Provider is not "AzureBlob" || (!string.IsNullOrWhiteSpace(o.BlobServiceUri) && !string.IsNullOrWhiteSpace(o.DataProtectionKeyVaultKeyUri)), "Storage:BlobServiceUri and Storage:DataProtectionKeyVaultKeyUri are required for AzureBlob.")
+            .Validate(o => StorageProviders.IsKnown(o.Provider), "Storage:Provider must be Local, FileSystem or AzureBlob.")
+            .Validate(o => o.Provider is not StorageProviders.Local || isLocalEnvironment, "Storage:Provider Local is only allowed in Development/Testing; use FileSystem or a cloud provider.")
+            .Validate(o => o.Provider is not StorageProviders.FileSystem || (Path.IsPathFullyQualified(o.LocalRootPath ?? string.Empty) && Path.IsPathFullyQualified(o.DataProtectionKeyDirectory ?? string.Empty)), "Storage:LocalRootPath and Storage:DataProtectionKeyDirectory must be absolute paths for FileSystem.")
+            .Validate(o => o.Provider is not StorageProviders.AzureBlob || (!string.IsNullOrWhiteSpace(o.BlobServiceUri) && !string.IsNullOrWhiteSpace(o.DataProtectionKeyVaultKeyUri)), "Storage:BlobServiceUri and Storage:DataProtectionKeyVaultKeyUri are required for AzureBlob.")
             .ValidateOnStart();
 
-        // Data Protection keys (auth cookies, antiforgery) are shared across replicas in Azure:
-        // persisted to private Blob Storage and wrapped with a Key Vault key, via managed identity.
+        // Data Protection keys (auth cookies, antiforgery) must be shared across replicas and survive
+        // restarts. Azure: private Blob Storage wrapped with a Key Vault key via managed identity.
+        // Any other host: a private persistent directory (Storage:DataProtectionKeyDirectory).
         var storageSection = configuration.GetSection(StorageOptions.SectionName).Get<StorageOptions>() ?? new StorageOptions();
         var dataProtection = services.AddDataProtection().SetApplicationName("GovBidPro");
-        if (storageSection.Provider == "AzureBlob" && !string.IsNullOrWhiteSpace(storageSection.BlobServiceUri) && !string.IsNullOrWhiteSpace(storageSection.DataProtectionKeyVaultKeyUri))
+        if (storageSection.Provider == StorageProviders.AzureBlob && !string.IsNullOrWhiteSpace(storageSection.BlobServiceUri) && !string.IsNullOrWhiteSpace(storageSection.DataProtectionKeyVaultKeyUri))
         {
-            var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = storageSection.ManagedIdentityClientId });
-            dataProtection
-                .PersistKeysToAzureBlobStorage(new Uri($"{storageSection.BlobServiceUri.TrimEnd('/')}/dataprotection/keys.xml"), credential)
-                .ProtectKeysWithAzureKeyVault(new Uri(storageSection.DataProtectionKeyVaultKeyUri), credential);
+            AzureDataProtection.Configure(dataProtection, storageSection);
+        }
+        else if (!string.IsNullOrWhiteSpace(storageSection.DataProtectionKeyDirectory))
+        {
+            dataProtection.PersistKeysToFileSystem(new DirectoryInfo(storageSection.DataProtectionKeyDirectory));
         }
 
         services.AddSingleton<IObjectStorage>(sp =>
         {
             var storage = sp.GetRequiredService<IOptions<StorageOptions>>();
-            return storage.Value.Provider == "AzureBlob" ? new AzureBlobObjectStorage(storage) : new LocalFileObjectStorage(storage);
+            return storage.Value.Provider switch
+            {
+                StorageProviders.AzureBlob => new AzureBlobObjectStorage(storage),
+                StorageProviders.Local or StorageProviders.FileSystem => new LocalFileObjectStorage(storage),
+                _ => throw new InvalidOperationException("Unknown Storage:Provider."),
+            };
         });
         services.AddSingleton<IMalwareScanner>(sp =>
             sp.GetRequiredService<IOptions<DocumentUploadOptions>>().Value.MalwareScanMode == "DevelopmentBypass"
