@@ -30,7 +30,7 @@ Legend: **Blocked** = no production use until approved. **Configured off** = cod
 
 ## Other known gaps before production
 
-- **Live SAM.gov integration is not built.** Official API documentation, access/keys, quotas and permitted use must be verified first (P1.2). The app runs in fixture-only mode and labels that data as demo data.
+- **Live SAM.gov sync is built but not verified.** The adapter follows the official Get Opportunities Public API v2 documentation and is tested against a fake server, but it has never been run with a real API key. It is off by default and the app still labels fixture data as demo data. Complete the checklist in [operations/sam-gov-sync.md](operations/sam-gov-sync.md) before relying on it.
 - **Malware scanning is not configured.** Uploads are stored but downloads are denied until a scanner is selected (candidate: Microsoft Defender for Storage malware scanning; needs an ADR and cost approval).
 - **Account email.** No `IEmailSender` is configured; production requires confirmed accounts, so an email provider decision is needed.
 - **PostgreSQL authentication.** The skeleton uses a password held in Key Vault. Switching to Microsoft Entra authentication with managed identity is recommended (ADR follow-up).

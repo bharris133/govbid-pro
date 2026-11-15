@@ -8,12 +8,12 @@ using Microsoft.Extensions.Options;
 
 namespace GovBidPro.Web.Controllers;
 
-public sealed record MeDto(string UserId, Guid? TenantId, string? CompanyName, string? Role, bool AiPlatformEnabled, bool AiEnabledForTenant, bool SamGovLiveIntegrationVerified, string DataSourceNotice);
+public sealed record MeDto(string UserId, Guid? TenantId, string? CompanyName, string? Role, bool AiPlatformEnabled, bool AiEnabledForTenant, bool SamGovLiveIntegrationVerified, bool SamGovSyncEnabled, string DataSourceNotice);
 
 [ApiController]
 [Route("api/v1/me")]
 [Authorize]
-public sealed class MeController(ITenantContext tenant, IAppDbContext db, IOptions<AiOptions> ai) : ControllerBase
+public sealed class MeController(ITenantContext tenant, IAppDbContext db, IOptions<AiOptions> ai, IOptions<SamGovOptions> samGov) : ControllerBase
 {
     [HttpGet]
     public async Task<MeDto> Get(CancellationToken cancellationToken)
@@ -28,6 +28,6 @@ public sealed class MeController(ITenantContext tenant, IAppDbContext db, IOptio
             aiTenant = company.AiEnabled;
         }
 
-        return new MeDto(tenant.UserId ?? string.Empty, tenant.HasTenant ? tenant.TenantId : null, companyName, tenant.Role?.ToString(), ai.Value.PlatformEnabled, aiTenant, SamGovIntegrationStatus.LiveIntegrationVerified, SamGovIntegrationStatus.Note);
+        return new MeDto(tenant.UserId ?? string.Empty, tenant.HasTenant ? tenant.TenantId : null, companyName, tenant.Role?.ToString(), ai.Value.PlatformEnabled, aiTenant, SamGovIntegrationStatus.LiveIntegrationVerified, samGov.Value.Enabled, SamGovIntegrationStatus.Note);
     }
 }

@@ -117,6 +117,25 @@ public static class DependencyInjection
         services.AddScoped<RetentionPolicyCatalog>();
         services.AddScoped<RetentionPurgeService>();
         services.AddSingleton<FixtureOpportunitySource>();
+
+        // Live sources are registered as scheduled IOpportunitySource only when enabled. The SAM.gov
+        // client has request logging removed because the documented API takes the key in the query string.
+        services.AddOptions<SamGovOptions>().Bind(configuration.GetSection(SamGovOptions.SectionName))
+            .Validate(SamGovOptions.IsValid, "OpportunitySources:SamGov is enabled but ApiKey, an https BaseUrl, PageSize (1-1000), LookbackDays (1-364), RequestTimeoutSeconds (5-120) or OffsetMode is invalid.")
+            .ValidateOnStart();
+        services.AddOptions<OpportunitySyncOptions>().Bind(configuration.GetSection(OpportunitySyncOptions.SectionName))
+            .Validate(o => o.IntervalMinutes >= 5 && o.MaxPagesPerRun is >= 1 and <= 100, "OpportunitySources:Sync IntervalMinutes must be at least 5 and MaxPagesPerRun 1-100.")
+            .ValidateOnStart();
+        services.AddHttpClient(SamGovOpportunitySource.HttpClientName).RemoveAllLoggers();
+        if (configuration.GetSection(SamGovOptions.SectionName).GetValue<bool>(nameof(SamGovOptions.Enabled)))
+        {
+            services.AddScoped<IOpportunitySource>(sp => new SamGovOpportunitySource(
+                sp.GetRequiredService<IHttpClientFactory>().CreateClient(SamGovOpportunitySource.HttpClientName),
+                sp.GetRequiredService<IOptions<SamGovOptions>>(),
+                sp.GetRequiredService<TimeProvider>()));
+        }
+
+        services.AddScoped<OpportunitySyncService>();
         return services;
     }
 }

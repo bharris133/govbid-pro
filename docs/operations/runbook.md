@@ -39,7 +39,7 @@ dotnet run --project src/GovBidPro.Web   # uses appsettings.Development.json
 ## Scheduled jobs
 
 - Retention purge: `Retention:PurgeJob:Enabled` (off outside Development until LEG-01). Idempotent; safe to re-run.
-- Opportunity import: fixture only; SAM.gov adapter pending P1.2.
+- Opportunity sync: `OpportunitySources:Sync:Enabled` (off by default). Runs every enabled live source with a bounded request budget and resumes from a saved cursor. See [sam-gov-sync.md](sam-gov-sync.md). Fixture import runs at startup in Development only.
 
 ## Incident response
 

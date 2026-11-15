@@ -22,6 +22,8 @@ All endpoints are under `/api/v1`, return JSON (camelCase, enums as strings) and
 | POST | `/api/v1/documents/{id}/restore` | ProposalWriter+ | Restore within the recovery window. |
 | POST | `/api/v1/documents/{id}/quarantine` | CompanyAdmin | Blocks all access. |
 | GET | `/api/v1/admin/imports` | PlatformAdmin + MFA | Recent import runs. |
+| GET | `/api/v1/admin/imports/sources` | PlatformAdmin + MFA | Per-source sync state: last success, cursor, backoff, last error code. |
+| POST | `/api/v1/admin/imports/sync` | PlatformAdmin + MFA | Runs one bounded sync of every enabled live source. 409 when none is enabled. |
 | POST | `/api/v1/admin/imports/fixture` | PlatformAdmin + MFA | Runs the labeled fixture import. |
 
 Planned (handoff §13, later milestones): `POST /opportunities/{id}/assessments`, `GET/POST /proposals`, `GET/POST /proposals/{id}/requirements`, `POST /proposals/{id}/reviews`.

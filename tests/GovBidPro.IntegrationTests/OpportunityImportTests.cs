@@ -166,4 +166,33 @@ public sealed class OpportunityImportTests(PostgresFixture postgres)
         Assert.Equal(ResponseType.Rfp, due.ResponseType);
         Assert.Equal(SourceNoticeType.Solicitation, due.NoticeType);
     }
+
+    [Fact]
+    public async Task Scheduled_sync_runs_every_registered_source_and_marks_live_data()
+    {
+        var (service, db, _) = await CreateAsync();
+        await using var _db = db;
+        var live = new LiveSource();
+        var sync = new OpportunitySyncService([live], service, NullLogger<OpportunitySyncService>.Instance);
+
+        var first = Assert.Single(await sync.RunAsync(maxPagesPerSource: 3, CancellationToken.None));
+        var second = Assert.Single(await sync.RunAsync(maxPagesPerSource: 3, CancellationToken.None));
+
+        Assert.Equal(["live-test"], sync.SourceKeys);
+        Assert.Equal(1, first.Summary.Created);
+        Assert.Equal(1, second.Summary.Unchanged);
+        var stored = await db.Opportunities.SingleAsync();
+        Assert.True(stored.IsLiveSource);
+        Assert.True((await db.SourceSyncStates.SingleAsync()).IsLiveSource);
+    }
+
+    private sealed class LiveSource : IOpportunitySource
+    {
+        public string SourceKey => "live-test";
+
+        public bool IsLive => true;
+
+        public Task<OpportunityImportPage> FetchAsync(OpportunityImportCursor? cursor, CancellationToken cancellationToken) =>
+            Task.FromResult(Page(null, Notice("L1")));
+    }
 }
