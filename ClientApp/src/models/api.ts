@@ -75,6 +75,66 @@ export interface OpportunitySearchCriteria {
   postedFrom?: string | null;
   postedTo?: string | null;
   dueAfter?: string | null;
+  dueBefore?: string | null;
+  openOnly?: boolean;
+}
+
+export type OpportunitySort = 'PostedNewest' | 'DueSoonest';
+
+export interface OpportunityRevision {
+  revisionNumber: number;
+  changeKind: 'Created' | 'Amended';
+  sourceUpdatedAt: string | null;
+  recordedAt: string;
+}
+
+export interface OpportunityDetail extends OpportunitySummary {
+  description: string | null;
+  office: string | null;
+  responseTypeRuleVersion: string | null;
+  pscCode: string | null;
+  placeOfPerformanceCountry: string | null;
+  sourceUpdatedAt: string | null;
+  responseDueOriginalText: string | null;
+  responseDueTimeZone: string | null;
+  submissionInstructions: string | null;
+  sourceUrl: string | null;
+  revisionNumber: number;
+  firstIngestedAt: string;
+  revisions: OpportunityRevision[];
+}
+
+export interface DiscoverySummary {
+  openOpportunities: number;
+  dueWithin7Days: number;
+  newLast7Days: number;
+  amendedLast7Days: number;
+}
+
+export interface UpcomingDeadline {
+  id: string;
+  title: string;
+  agency: string | null;
+  responseType: ResponseType;
+  dueAt: string;
+  dueOriginalText: string | null;
+  isLiveSource: boolean;
+}
+
+export interface SavedSearchSummary {
+  id: string;
+  name: string;
+  notificationFrequency: NotificationFrequency;
+  openMatches: number;
+  newMatchesLast7Days: number;
+}
+
+export interface Dashboard {
+  generatedAt: string;
+  discovery: DiscoverySummary;
+  upcomingDeadlines: UpcomingDeadline[];
+  savedSearches: SavedSearchSummary[];
+  sources: SourceFreshness[];
 }
 
 export interface SavedSearch {

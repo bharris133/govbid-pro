@@ -36,3 +36,31 @@ export function describeError(error: unknown): string {
   }
   return 'Something went wrong.';
 }
+
+/** Date-only input value (yyyy-mm-dd) to an ISO instant at the start or end of that UTC day. */
+export function dateInputToIso(value: string, endOfDay = false): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  return `${value}T${endOfDay ? '23:59:59' : '00:00:00'}Z`;
+}
+
+export function link(href: string, text: string, className?: string): HTMLAnchorElement {
+  return el('a', { text, attrs: { href }, ...(className ? { className } : {}) });
+}
+
+/** Renders the source freshness banner shared by discovery pages. Fixture data is always labeled. */
+export function renderSourceStatus(
+  target: HTMLElement,
+  sources: { sourceKey: string; isLiveSource: boolean; lastSuccessfulSyncAt: string | null; lastErrorCode: string | null }[],
+): void {
+  target.replaceChildren();
+  if (sources.length === 0) {
+    target.textContent = 'No opportunity source has been synchronized yet.';
+    return;
+  }
+  target.classList.toggle('fixture', sources.some((s) => !s.isLiveSource));
+  for (const source of sources) {
+    const label = source.isLiveSource ? 'Live source' : 'DEMO FIXTURE DATA — not live government data';
+    const error = source.lastErrorCode ? ` Last error: ${source.lastErrorCode}.` : '';
+    target.append(el('p', { text: `${label} (${source.sourceKey}). Last updated ${formatDate(source.lastSuccessfulSyncAt)}.${error}` }));
+  }
+}

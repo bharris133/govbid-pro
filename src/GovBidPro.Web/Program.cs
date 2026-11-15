@@ -72,6 +72,7 @@ services.AddControllers(options => options.Filters.Add(new AutoValidateAntiforge
     .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 services.AddRazorPages(options =>
 {
+    options.Conventions.AuthorizeFolder("/Dashboard");
     options.Conventions.AuthorizeFolder("/Opportunities");
     options.Conventions.AuthorizeFolder("/Documents");
     options.Conventions.AuthorizeFolder("/Onboarding");

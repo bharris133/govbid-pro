@@ -37,6 +37,21 @@ test('company user can search fixture opportunities and save a search', async ({
   await page.getByRole('button', { name: 'Save search' }).click();
   await expect(page.locator('#saved-searches')).toContainText('Sources sought watch');
 
+  // P1.1: dashboard summarizes discovery and links through to a notice's provenance.
+  await page.goto('/Dashboard');
+  await expect(page.locator('html')).toHaveAttribute('data-client-ready', 'true');
+  await expect(page.locator('#source-status')).toContainText('DEMO FIXTURE DATA');
+  await expect(page.locator('#discovery-stats')).toContainText('Open for response');
+  await expect(page.locator('#saved-search-summary')).toContainText('Sources sought watch');
+  await page.locator('#saved-search-summary').getByRole('link', { name: 'Sources sought watch' }).click();
+  await expect(page).toHaveURL(/savedSearch=/);
+  await expect(page.locator('#results tbody tr')).toHaveCount(2);
+  await page.locator('#results tbody tr a').first().click();
+  await expect(page).toHaveURL(/Opportunities\/Detail/);
+  await expect(page.locator('#opportunity-detail')).toContainText('Provenance');
+  await expect(page.locator('#opportunity-detail')).toContainText('Demo fixture');
+  await expect(page.locator('#opportunity-detail')).toContainText('Revision 1');
+
   await page.goto('/Documents');
   await expect(page.locator('html')).toHaveAttribute('data-client-ready', 'true');
   await page.getByLabel('File (PDF, DOCX, XLSX, TXT, CSV, PNG or JPG)').setInputFiles({

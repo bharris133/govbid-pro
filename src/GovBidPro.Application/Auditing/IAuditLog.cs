@@ -12,6 +12,7 @@ public static class AuditActions
 {
     public const string CompanyCreated = "company.created";
     public const string SavedSearchCreated = "saved_search.created";
+    public const string SavedSearchUpdated = "saved_search.updated";
     public const string SavedSearchDeleted = "saved_search.deleted";
     public const string DocumentUpload = "document.upload";
     public const string DocumentDownload = "document.download";

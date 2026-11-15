@@ -2,6 +2,7 @@ using GovBidPro.Application.Abstractions;
 using GovBidPro.Application.Ai;
 using GovBidPro.Application.Auditing;
 using GovBidPro.Application.Companies;
+using GovBidPro.Application.Dashboard;
 using GovBidPro.Application.Documents;
 using GovBidPro.Application.Opportunities;
 using GovBidPro.Application.Retention;
@@ -109,6 +110,7 @@ public static class DependencyInjection
         services.AddScoped<AiTaskService>();
         services.AddScoped<CompanyService>();
         services.AddScoped<OpportunityQueryService>();
+        services.AddScoped<DashboardService>();
         services.AddScoped<OpportunityImportService>();
         services.AddScoped<SavedSearchService>();
         services.AddScoped<DocumentService>();

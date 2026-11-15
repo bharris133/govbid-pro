@@ -7,11 +7,13 @@ All endpoints are under `/api/v1`, return JSON (camelCase, enums as strings) and
 | GET | `/health/live` | none | Liveness, no checks, no details. |
 | GET | `/health/ready` | none | Database readiness, no details. |
 | GET | `/api/v1/me` | signed in | User, resolved company and role, AI and SAM.gov status flags. |
-| GET | `/api/v1/opportunities` | tenant member | Filters: `keywords`, `naics`*, `agency`*, `noticeType`*, `responseType`*, `setAside`*, `state`*, `postedFrom`, `postedTo`, `dueAfter`, `page`, `pageSize` (max 100). Returns `results` (paged) and `sources` (freshness and live/fixture flag). *repeatable |
+| GET | `/api/v1/dashboard` | tenant member | Discovery counts (open, due in 7 days, new, amended), upcoming deadlines, the company's saved searches with open and new match counts, and source freshness. |
+| GET | `/api/v1/opportunities` | tenant member | Filters: `keywords`, `naics`*, `agency`*, `noticeType`*, `responseType`*, `setAside`*, `state`*, `postedFrom`, `postedTo`, `dueAfter`, `dueBefore`, `openOnly`, `sort` (`PostedNewest`, `DueSoonest`), `page`, `pageSize` (max 100). Returns `results` (paged) and `sources` (freshness and live/fixture flag). *repeatable |
 | GET | `/api/v1/opportunities/{id}` | tenant member | Detail with source URL, raw notice type, deadline text/time zone, submission instructions and revision history. |
 | GET | `/api/v1/saved-searches` | tenant member | The company's saved searches. |
 | GET | `/api/v1/saved-searches/{id}` | tenant member | 404 for other tenants' IDs. |
 | POST | `/api/v1/saved-searches` | ProposalWriter+ | Body `{ name, criteria, notificationFrequency }`. 201. |
+| PUT | `/api/v1/saved-searches/{id}` | ProposalWriter+ | Replace name, criteria and alert frequency. 404 across tenants. |
 | DELETE | `/api/v1/saved-searches/{id}` | ProposalWriter+ | 204; 404 across tenants. |
 | GET | `/api/v1/documents` | tenant member | The company's non-purged documents. |
 | POST | `/api/v1/documents` | ProposalWriter+ | Multipart: `file`, `classification`, `affirmPermittedToUpload`, `affirmNoProhibitedContent`. 201, or 403 with an `upload.*` reason code. |

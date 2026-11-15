@@ -9,7 +9,7 @@ namespace GovBidPro.Application.Opportunities;
 /// <summary>Translates <see cref="OpportunitySearchCriteria"/> into a provider-translatable query.</summary>
 public static class OpportunityFilter
 {
-    public static IQueryable<Opportunity> Apply(IQueryable<Opportunity> query, OpportunitySearchCriteria criteria)
+    public static IQueryable<Opportunity> Apply(IQueryable<Opportunity> query, OpportunitySearchCriteria criteria, DateTimeOffset? now = null)
     {
         ArgumentNullException.ThrowIfNull(query);
         ArgumentNullException.ThrowIfNull(criteria);
@@ -75,6 +75,16 @@ public static class OpportunityFilter
         if (criteria.DueAfter is { } dueAfter)
         {
             query = query.Where(o => o.Deadline.DueAt >= dueAfter);
+        }
+
+        if (criteria.DueBefore is { } dueBefore)
+        {
+            query = query.Where(o => o.Deadline.DueAt <= dueBefore);
+        }
+
+        if (criteria.OpenOnly && now is { } current)
+        {
+            query = query.Where(o => o.NoticeType != Domain.Enums.SourceNoticeType.AwardNotice && (o.Deadline.DueAt == null || o.Deadline.DueAt >= current));
         }
 
         return query;
