@@ -75,6 +75,7 @@ services.AddRazorPages(options =>
     options.Conventions.AuthorizeFolder("/Dashboard");
     options.Conventions.AuthorizeFolder("/Opportunities");
     options.Conventions.AuthorizeFolder("/Documents");
+    options.Conventions.AuthorizeFolder("/Company");
     options.Conventions.AuthorizeFolder("/Onboarding");
 });
 

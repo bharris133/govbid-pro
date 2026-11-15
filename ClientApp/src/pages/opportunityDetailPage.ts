@@ -2,6 +2,7 @@ import { getOpportunity } from '../api/opportunities.js';
 import { describeError, el, formatDate, requireElement } from '../components/dom.js';
 import { noticeTypeLabels, responseTypeLabels } from '../labels.js';
 import type { OpportunityDetail } from '../models/api.js';
+import { renderAssessmentPanel } from './assessmentPanel.js';
 
 function row(label: string, value: string | Node): HTMLElement {
   return el('div', { className: 'detail-row' }, [el('dt', { text: label }), el('dd', {}, [value])]);
@@ -72,6 +73,7 @@ export async function initOpportunityDetailPage(): Promise<void> {
     renderOpportunity(target, opportunity);
     document.title = `${opportunity.title} · GovBid Pro`;
     status.textContent = '';
+    await renderAssessmentPanel(requireElement('#opportunity-extra', HTMLElement), opportunity.id, opportunity.revisionNumber);
   } catch (error) {
     status.textContent = (error as { status?: number }).status === 404 ? 'This opportunity was not found.' : describeError(error);
     status.className = 'error';

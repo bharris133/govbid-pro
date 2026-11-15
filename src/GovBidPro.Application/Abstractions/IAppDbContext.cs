@@ -22,6 +22,10 @@ public interface IAppDbContext
 
     DbSet<StoredDocument> StoredDocuments { get; }
 
+    DbSet<CompanyProfile> CompanyProfiles { get; }
+
+    DbSet<OpportunityAssessment> OpportunityAssessments { get; }
+
     DbSet<RetentionPolicy> RetentionPolicies { get; }
 
     DbSet<RetentionAction> RetentionActions { get; }

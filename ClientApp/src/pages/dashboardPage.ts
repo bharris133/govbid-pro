@@ -57,10 +57,22 @@ function render(data: Dashboard): void {
   }
 }
 
+function renderDecisions(data: Dashboard): void {
+  const d = data.decisions;
+  requireElement('#dashboard-extra', HTMLElement).replaceChildren(
+    el('section', { attrs: { 'aria-labelledby': 'decisions-heading' } }, [
+      el('h2', { text: 'Pursuit decisions', attrs: { id: 'decisions-heading' } }),
+      el('dl', { className: 'stats', attrs: { id: 'decision-stats' } }, [stat('Go', d.go), stat('Watch', d.watch), stat('No-go', d.noGo), stat('Scored, no decision', d.undecided)]),
+    ]),
+  );
+}
+
 export async function initDashboardPage(): Promise<void> {
   const status = requireElement('#dashboard-status', HTMLElement);
   try {
-    render(await getDashboard());
+    const data = await getDashboard();
+    render(data);
+    renderDecisions(data);
     status.textContent = '';
   } catch (error) {
     status.textContent = describeError(error);

@@ -1,0 +1,44 @@
+@page
+@model GovBidPro.Web.Pages.Company.IndexModel
+@{
+    ViewData["Title"] = "Company";
+    ViewData["Page"] = "company";
+}
+<h1 id="company-name">Company</h1>
+
+<section aria-labelledby="profile-heading">
+    <h2 id="profile-heading">Company profile for fit scoring</h2>
+    <p>GovBid Pro compares each opportunity with this profile and explains the result. The score is a screening aid, not a win probability.</p>
+    <p class="notice warning">Set-aside programs here are your own statement. GovBid Pro does not verify or certify eligibility (including VetCert). Always confirm eligibility in the solicitation.</p>
+    <form id="profile-form" class="panel">
+        <div class="field">
+            <label for="p-naics">NAICS codes (comma separated)</label>
+            <input id="p-naics" name="naicsCodes" inputmode="numeric" autocomplete="off" aria-describedby="p-naics-help" />
+            <span id="p-naics-help" class="muted">For example 541511, 541512</span>
+        </div>
+        <fieldset>
+            <legend>Set-aside programs your company states it qualifies for</legend>
+            <div id="set-aside-options"></div>
+        </fieldset>
+        <div class="field">
+            <label for="p-keywords">Capability keywords (comma separated)</label>
+            <textarea id="p-keywords" name="capabilityKeywords" rows="2"></textarea>
+        </div>
+        <div class="field">
+            <label for="p-states">Preferred places of performance (two-letter states, comma separated)</label>
+            <input id="p-states" name="preferredStates" autocomplete="off" />
+        </div>
+        <div class="field">
+            <label for="p-agencies">Preferred agencies (one per line; part of the name is enough)</label>
+            <textarea id="p-agencies" name="preferredAgencies" rows="3"></textarea>
+        </div>
+        <div class="field">
+            <label for="p-days">Fewest days you want before a response is due</label>
+            <input id="p-days" name="minimumResponseDays" type="number" min="0" max="365" value="10" required />
+        </div>
+        <button type="submit">Save company profile</button>
+        <p id="profile-status" role="status" aria-live="polite"></p>
+        <p id="profile-updated" class="muted"></p>
+    </form>
+</section>
+<div id="company-extra"></div>

@@ -64,6 +64,77 @@ export interface OpportunitySearchResult {
   sources: SourceFreshness[];
 }
 
+export type SetAsideCategory = 'SmallBusiness' | 'EightA' | 'HubZone' | 'Sdvosb' | 'Vosb' | 'Wosb' | 'Edwosb' | 'IndianEconomicEnterprise';
+export type GoNoGoDecision = 'Undecided' | 'Go' | 'NoGo' | 'Watch';
+export type FitOutcome = 'Met' | 'Partial' | 'NotMet' | 'NotEvaluated';
+export type CompanyRole = 'Reviewer' | 'ProposalWriter' | 'TeamManager' | 'CompanyAdmin';
+
+export interface CompanyFitProfile {
+  naicsCodes: string[];
+  setAsideQualifications: SetAsideCategory[];
+  preferredStates: string[];
+  preferredAgencies: string[];
+  capabilityKeywords: string[];
+  minimumResponseDays: number;
+}
+
+export interface CompanyProfile {
+  fit: CompanyFitProfile;
+  updatedAt: string | null;
+  updatedBy: string | null;
+  isEmpty: boolean;
+}
+
+export interface FitCriterion {
+  key: string;
+  label: string;
+  weight: number;
+  points: number;
+  outcome: FitOutcome;
+  explanation: string;
+}
+
+export interface FitResult {
+  score: number | null;
+  band: 'Strong' | 'Possible' | 'Weak' | 'NotScored';
+  ruleVersion: string;
+  criteria: FitCriterion[];
+  cautions: string[];
+}
+
+export interface Assessment {
+  id: string;
+  opportunityId: string;
+  sequence: number;
+  opportunityRevisionNumber: number;
+  score: number | null;
+  band: string;
+  ruleVersion: string;
+  criteria: FitCriterion[];
+  decision: GoNoGoDecision;
+  rationale: string | null;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface AssessmentSummary {
+  opportunityId: string;
+  opportunityTitle: string;
+  responseDueAt: string | null;
+  score: number | null;
+  band: string;
+  decision: GoNoGoDecision;
+  decidedAt: string;
+  opportunityAmendedSince: boolean;
+}
+
+export interface Me {
+  userId: string;
+  tenantId: string | null;
+  companyName: string | null;
+  role: CompanyRole | null;
+}
+
 export interface OpportunitySearchCriteria {
   keywords?: string | null;
   naicsCodes: string[];
@@ -135,6 +206,7 @@ export interface Dashboard {
   upcomingDeadlines: UpcomingDeadline[];
   savedSearches: SavedSearchSummary[];
   sources: SourceFreshness[];
+  decisions: { go: number; noGo: number; watch: number; undecided: number };
 }
 
 export interface SavedSearch {

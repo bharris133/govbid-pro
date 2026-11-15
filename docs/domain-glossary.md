@@ -22,3 +22,6 @@
 | **Retention policy** | Versioned, configured period for a data class. Release 1 values are provisional (D-02) pending legal review (LEG-01). |
 | **Legal hold** | Flag that suspends eligible destruction. |
 | **SubmittedExternally** | Proposal state recording user-entered evidence that the user submitted elsewhere. |
+| **Company fit profile** | What a company states about itself for scoring: NAICS codes, set-aside programs it says it qualifies for, capability keywords, preferred states and agencies, minimum days to respond. Self-declared; never verified by GovBid Pro. |
+| **Fit score** | Rule-based 0-100 screening score (`fit-v1`): NAICS 30, set-aside 20, keywords 20, place 10, agency 10, time 10. Criteria without data are left out. Not a win probability. |
+| **Assessment** | Immutable company-specific record of a fit score, its criteria and a Go/No-go/Watch decision with author, time, rationale and the notice revision scored. The sequence of assessments is the audit trail. |

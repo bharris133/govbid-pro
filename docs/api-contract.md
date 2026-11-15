@@ -10,6 +10,12 @@ All endpoints are under `/api/v1`, return JSON (camelCase, enums as strings) and
 | GET | `/api/v1/dashboard` | tenant member | Discovery counts (open, due in 7 days, new, amended), upcoming deadlines, the company's saved searches with open and new match counts, and source freshness. |
 | GET | `/api/v1/opportunities` | tenant member | Filters: `keywords`, `naics`*, `agency`*, `noticeType`*, `responseType`*, `setAside`*, `state`*, `postedFrom`, `postedTo`, `dueAfter`, `dueBefore`, `openOnly`, `sort` (`PostedNewest`, `DueSoonest`), `page`, `pageSize` (max 100). Returns `results` (paged) and `sources` (freshness and live/fixture flag). *repeatable |
 | GET | `/api/v1/opportunities/{id}` | tenant member | Detail with source URL, raw notice type, deadline text/time zone, submission instructions and revision history. |
+| GET | `/api/v1/company/profile` | tenant member | The company's fit profile (NAICS, declared set-aside programs, keywords, states, agencies, minimum response days). |
+| PUT | `/api/v1/company/profile` | TeamManager+ (configurable) | Replace the fit profile. 400 `company_profile.invalid`. |
+| GET | `/api/v1/opportunities/{id}/fit` | tenant member | Explainable fit score (`fit-v1`): six weighted criteria, each with points and a reason, plus cautions. Nothing is saved. |
+| GET | `/api/v1/opportunities/{id}/assessments` | tenant member | The company's assessment history for the notice, newest first. |
+| POST | `/api/v1/opportunities/{id}/assessments` | ProposalWriter+ for `Watch`/`Undecided`; TeamManager+ (configurable) for `Go`/`NoGo` | Body `{ decision, rationale }`. Scores now and appends an immutable record (score, criteria snapshot, notice revision, author). Rationale required for Go/No-go. 201. |
+| GET | `/api/v1/assessments?decision=` | tenant member | Latest assessment per opportunity, with `opportunityAmendedSince`. |
 | GET | `/api/v1/saved-searches` | tenant member | The company's saved searches. |
 | GET | `/api/v1/saved-searches/{id}` | tenant member | 404 for other tenants' IDs. |
 | POST | `/api/v1/saved-searches` | ProposalWriter+ | Body `{ name, criteria, notificationFrequency }`. 201. |
@@ -26,7 +32,7 @@ All endpoints are under `/api/v1`, return JSON (camelCase, enums as strings) and
 | POST | `/api/v1/admin/imports/sync` | PlatformAdmin + MFA | Runs one bounded sync of every enabled live source. 409 when none is enabled. |
 | POST | `/api/v1/admin/imports/fixture` | PlatformAdmin + MFA | Runs the labeled fixture import. |
 
-Planned (handoff §13, later milestones): `POST /opportunities/{id}/assessments`, `GET/POST /proposals`, `GET/POST /proposals/{id}/requirements`, `POST /proposals/{id}/reviews`.
+Planned (handoff §13, later milestones): `GET/POST /proposals`, `GET/POST /proposals/{id}/requirements`, `POST /proposals/{id}/reviews`.
 
 ## Status codes
 

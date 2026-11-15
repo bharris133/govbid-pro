@@ -1,7 +1,9 @@
+import { listLatestAssessments } from '../api/assessments.js';
 import { createSavedSearch, deleteSavedSearch, listSavedSearches, searchOpportunities } from '../api/opportunities.js';
 import { dateInputToIso, describeError, el, formatDate, link, renderSourceStatus, requireElement } from '../components/dom.js';
-import { noticeTypeLabels, responseTypeLabels } from '../labels.js';
+import { decisionLabels, noticeTypeLabels, responseTypeLabels } from '../labels.js';
 import type {
+  GoNoGoDecision,
   NotificationFrequency,
   OpportunitySearchCriteria,
   OpportunitySearchResult,
@@ -71,7 +73,7 @@ function applyQueryString(form: HTMLFormElement, params: URLSearchParams): void 
   }
 }
 
-function renderResults(summary: HTMLElement, container: HTMLElement, result: OpportunitySearchResult): void {
+function renderResults(summary: HTMLElement, container: HTMLElement, result: OpportunitySearchResult, decisions: Map<string, GoNoGoDecision>): void {
   const { items, totalCount, page, pageSize } = result.results;
   const first = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
   const last = Math.min(totalCount, page * pageSize);
@@ -80,7 +82,7 @@ function renderResults(summary: HTMLElement, container: HTMLElement, result: Opp
     container.replaceChildren(el('p', { text: 'No opportunities match these filters.', className: 'muted' }));
     return;
   }
-  const header = el('tr', {}, ['Title', 'Notice type (source)', 'Response type', 'NAICS', 'Response due', 'Source'].map((h) => el('th', { text: h, attrs: { scope: 'col' } })));
+  const header = el('tr', {}, ['Title', 'Notice type (source)', 'Response type', 'NAICS', 'Response due', 'Your decision', 'Source'].map((h) => el('th', { text: h, attrs: { scope: 'col' } })));
   const rows = items.map((o) =>
     el('tr', {}, [
       el('td', {}, [
@@ -91,6 +93,7 @@ function renderResults(summary: HTMLElement, container: HTMLElement, result: Opp
       el('td', { text: responseTypeLabels[o.responseType] }),
       el('td', { text: o.naicsCode ?? '—' }),
       el('td', { text: formatDate(o.responseDueAt) }),
+      el('td', { text: decisions.has(o.id) ? decisionLabels[decisions.get(o.id) ?? 'Undecided'] : '—' }),
       el('td', {}, [
         el('span', { text: o.isLiveSource ? 'Live' : 'Demo fixture', className: o.isLiveSource ? 'tag' : 'tag fixture' }),
         ...(o.isAmended ? [el('span', { text: 'Amended', className: 'tag' })] : []),
@@ -142,13 +145,19 @@ export async function initOpportunitiesPage(): Promise<void> {
   const pagination = requireElement('#pagination', HTMLElement);
   const params = new URLSearchParams(window.location.search);
   let saved: SavedSearch[] = [];
+  const decisions = new Map<string, GoNoGoDecision>();
+  try {
+    for (const a of await listLatestAssessments()) decisions.set(a.opportunityId, a.decision);
+  } catch {
+    // Decisions are an enhancement to the list; the search still works without them.
+  }
 
   const runSearch = async (page = 1): Promise<void> => {
     summary.textContent = 'Searching…';
     try {
       const result = await searchOpportunities(readCriteria(filters), page, readSort(filters));
       renderSourceStatus(sourceStatus, result.sources);
-      renderResults(summary, results, result);
+      renderResults(summary, results, result, decisions);
       renderPagination(pagination, result, (target) => void runSearch(target));
     } catch (error) {
       summary.textContent = describeError(error);

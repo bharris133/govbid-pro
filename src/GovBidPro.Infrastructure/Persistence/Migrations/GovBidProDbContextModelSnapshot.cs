@@ -227,6 +227,41 @@ namespace GovBidPro.Infrastructure.Persistence.Migrations
                     b.ToTable("company_memberships", (string)null);
                 });
 
+            modelBuilder.Entity("GovBidPro.Domain.Entities.CompanyProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Fit")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .IsUnique();
+
+                    b.ToTable("company_profiles", (string)null);
+                });
+
             modelBuilder.Entity("GovBidPro.Domain.Entities.ImportRun", b =>
                 {
                     b.Property<Guid>("Id")
@@ -401,6 +436,68 @@ namespace GovBidPro.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("opportunities", (string)null);
+                });
+
+            modelBuilder.Entity("GovBidPro.Domain.Entities.OpportunityAssessment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Band")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<string>("CriteriaJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("Decision")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<Guid>("OpportunityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("OpportunityRevisionNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Rationale")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("RuleVersion")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<int?>("Score")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Sequence")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OpportunityId");
+
+                    b.HasIndex("TenantId", "OpportunityId", "Sequence")
+                        .IsUnique();
+
+                    b.ToTable("opportunity_assessments", (string)null);
                 });
 
             modelBuilder.Entity("GovBidPro.Domain.Entities.OpportunityRevision", b =>
@@ -968,6 +1065,15 @@ namespace GovBidPro.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("GovBidPro.Domain.Entities.CompanyProfile", b =>
+                {
+                    b.HasOne("GovBidPro.Domain.Entities.Company", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("GovBidPro.Domain.Entities.Opportunity", b =>
                 {
                     b.OwnsOne("GovBidPro.Domain.ValueObjects.ResponseDeadline", "Deadline", b1 =>
@@ -998,6 +1104,21 @@ namespace GovBidPro.Infrastructure.Persistence.Migrations
                         });
 
                     b.Navigation("Deadline")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("GovBidPro.Domain.Entities.OpportunityAssessment", b =>
+                {
+                    b.HasOne("GovBidPro.Domain.Entities.Opportunity", null)
+                        .WithMany()
+                        .HasForeignKey("OpportunityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GovBidPro.Domain.Entities.Company", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

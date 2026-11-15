@@ -52,6 +52,24 @@ test('company user can search fixture opportunities and save a search', async ({
   await expect(page.locator('#opportunity-detail')).toContainText('Demo fixture');
   await expect(page.locator('#opportunity-detail')).toContainText('Revision 1');
 
+  // P1.3: the fit score is explained and a Go decision is recorded with a rationale.
+  const detailUrl = page.url();
+  await expect(page.locator('#fit-score')).toContainText('How the score was calculated');
+  await page.goto('/Company');
+  await expect(page.locator('html')).toHaveAttribute('data-client-ready', 'true');
+  await page.getByLabel('NAICS codes (comma separated)').fill('561210, 541511');
+  await page.getByLabel('Capability keywords (comma separated)').fill('facilities, maintenance');
+  await page.getByLabel('Small business', { exact: true }).check();
+  await page.getByRole('button', { name: 'Save company profile' }).click();
+  await expect(page.locator('#profile-status')).toContainText('Company profile saved.');
+  await page.goto(detailUrl);
+  await expect(page.locator('#fit-score')).toContainText('/ 100');
+  await page.getByLabel('Rationale (required for Go and No-go)').fill('Matches our facilities experience.');
+  await page.getByRole('button', { name: 'Record decision' }).click();
+  await expect(page.locator('#assessment-status')).toContainText('Decision recorded.');
+  await expect(page.locator('#assessment-history')).toContainText('Go · score');
+  await expect(page.locator('#assessment-history')).toContainText('Matches our facilities experience.');
+
   await page.goto('/Documents');
   await expect(page.locator('html')).toHaveAttribute('data-client-ready', 'true');
   await page.getByLabel('File (PDF, DOCX, XLSX, TXT, CSV, PNG or JPG)').setInputFiles({

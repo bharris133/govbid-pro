@@ -31,6 +31,10 @@ public sealed class GovBidProDbContext(DbContextOptions<GovBidProDbContext> opti
 
     public DbSet<StoredDocument> StoredDocuments => Set<StoredDocument>();
 
+    public DbSet<CompanyProfile> CompanyProfiles => Set<CompanyProfile>();
+
+    public DbSet<OpportunityAssessment> OpportunityAssessments => Set<OpportunityAssessment>();
+
     public DbSet<RetentionPolicy> RetentionPolicies => Set<RetentionPolicy>();
 
     public DbSet<RetentionAction> RetentionActions => Set<RetentionAction>();
@@ -74,6 +78,8 @@ public sealed class GovBidProDbContext(DbContextOptions<GovBidProDbContext> opti
         builder.Entity<SavedSearch>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
         builder.Entity<StoredDocument>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
         builder.Entity<RetentionAction>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<CompanyProfile>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<OpportunityAssessment>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
         builder.Entity<AiRequestRecord>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
     }
 }

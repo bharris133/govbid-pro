@@ -9,8 +9,10 @@ Maps the handoff §14 matrix to what this repository contains today. "P0 deliver
 | SAM.gov monitoring | requirements.md §2; research | P1 | Source abstraction, idempotent resumable import, revisions, sync state; **fixture source only** (labeled) | `OpportunityImportTests` |
 | Notice taxonomy (RFI/RFP/RFQ/Sources Sought; notice vs response type) | research; handoff §3.1 | P0 | Separate enums, raw value kept, versioned mapping rules, user override in domain | `ResponseTypeMapperTests`, `DomainTests` |
 | Custom filters / saved searches | requirements.md §2 | P1 | NAICS, agency, keywords, notice/response type, set-aside, state, dates; tenant-owned saved searches | `OpportunityFilterTests`, smoke test |
+| Opportunity discovery dashboard | requirements.md §2; handoff P1.1 | P1.1 | Dashboard (open, due soon, new, amended, upcoming deadlines, saved-search match counts), detail page with provenance, paging, sorting, more filters | `DashboardTests`, `DiscoveryApiTests`, smoke test |
+| Live SAM.gov sync | handoff §6, P1.2 | P1.2 | Official v2 API adapter, bounded scheduled sync, admin endpoints; off by default and **not verified live** | `SamGovSourceTests`, `OpportunityImportTests` |
 | Alerts | requirements.md §2 | P1.6 | Frequency stored only | — |
-| Fit scoring, Go/No-go | requirements.md §3 | P1.3 | Not started | — |
+| Fit scoring, Go/No-go | requirements.md §3 | P1.3 | Company fit profile, explainable rule-based score, role-controlled Go/No-go/Watch with rationale, append-only history, amended-since flag, dashboard counts | `FitScorerTests`, `AssessmentTests`, `AssessmentApiTests`, smoke test |
 | Proposal lifecycle, compliance matrix | requirements.md §4–5; handoff §7 | P1.4 | Lifecycle state machine and compliance statuses in Domain | `ProposalLifecycleTests` |
 | Documents | requirements.md §4; handoff §9B | P1.5 / P0-SEC | Secure upload, classification, marker rejection, private storage, authorized download, soft delete/restore, quarantine | `DocumentSecurityTests`, `ApiSecurityTests` |
 | AI assistance | requirements.md §6 | P2/P3 opt-in | Provider abstraction, policy gate, disabled by default; no endpoint | `AiGovernanceTests` |

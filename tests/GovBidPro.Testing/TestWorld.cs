@@ -1,5 +1,6 @@
 using GovBidPro.Application.Abstractions;
 using GovBidPro.Application.Ai;
+using GovBidPro.Application.Assessments;
 using GovBidPro.Application.Documents;
 using GovBidPro.Application.Opportunities;
 using GovBidPro.Application.Retention;
@@ -135,6 +136,11 @@ public sealed class TestWorld(string connectionString, MutableTimeProvider clock
     public SavedSearchService SavedSearches(GovBidProDbContext db, ITenantContext tenant, RecordingAuditLog? audit = null) =>
         new(db, tenant, audit ?? new RecordingAuditLog(), Clock);
 
+    public AssessmentOptions Assessment { get; set; } = new();
+
+    public AssessmentService Assessments(GovBidProDbContext db, ITenantContext tenant, RecordingAuditLog? audit = null) =>
+        new(db, tenant, audit ?? new RecordingAuditLog(), new DbUserDirectory(db), Options.Create(Assessment), Clock);
+
     public DocumentService Documents(GovBidProDbContext db, ITenantContext tenant, RecordingAuditLog? audit = null) =>
         new(db, tenant, audit ?? new RecordingAuditLog(), Storage, Scanner, new DocumentDataPolicyEvaluator(db, Options.Create(DataHandling)),
             new RetentionPolicyCatalog(db, Options.Create(Retention), Clock), new FixedCorrelation(), Options.Create(Uploads), Clock);
@@ -164,4 +170,20 @@ public sealed class ListOpportunitySource(IReadOnlyList<ImportedOpportunity> ite
 
     public Task<OpportunityImportPage> FetchAsync(OpportunityImportCursor? cursor, CancellationToken cancellationToken) =>
         Task.FromResult(new OpportunityImportPage(items, null));
+}
+
+/// <summary>User lookup over the test database (mirrors the production adapter).</summary>
+public sealed class DbUserDirectory(GovBidProDbContext db) : IUserDirectory
+{
+    public async Task<IReadOnlyDictionary<string, DirectoryUser>> GetAsync(IReadOnlyCollection<string> userIds, CancellationToken cancellationToken) =>
+        await db.Users.AsNoTracking().Where(u => userIds.Contains(u.Id))
+            .Select(u => new DirectoryUser(u.Id, u.Email ?? u.Id, u.EmailConfirmed))
+            .ToDictionaryAsync(u => u.UserId, StringComparer.Ordinal, cancellationToken);
+
+    public async Task<DirectoryUser?> FindByEmailAsync(string email, CancellationToken cancellationToken)
+    {
+        var normalized = email.Trim().ToUpperInvariant();
+        return await db.Users.AsNoTracking().Where(u => u.NormalizedEmail == normalized)
+            .Select(u => new DirectoryUser(u.Id, u.Email ?? u.Id, u.EmailConfirmed)).SingleOrDefaultAsync(cancellationToken);
+    }
 }

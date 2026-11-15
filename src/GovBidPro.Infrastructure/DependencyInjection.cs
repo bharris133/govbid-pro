@@ -1,5 +1,6 @@
 using GovBidPro.Application.Abstractions;
 using GovBidPro.Application.Ai;
+using GovBidPro.Application.Assessments;
 using GovBidPro.Application.Auditing;
 using GovBidPro.Application.Companies;
 using GovBidPro.Application.Dashboard;
@@ -10,6 +11,7 @@ using GovBidPro.Application.SavedSearches;
 using GovBidPro.Application.Security;
 using GovBidPro.Infrastructure.Ai;
 using GovBidPro.Infrastructure.Auditing;
+using GovBidPro.Infrastructure.Identity;
 using GovBidPro.Infrastructure.Persistence;
 using GovBidPro.Infrastructure.SamGov;
 using GovBidPro.Infrastructure.Scanning;
@@ -111,6 +113,9 @@ public static class DependencyInjection
         services.AddScoped<CompanyService>();
         services.AddScoped<OpportunityQueryService>();
         services.AddScoped<DashboardService>();
+        services.AddOptions<AssessmentOptions>().Bind(configuration.GetSection(AssessmentOptions.SectionName));
+        services.AddScoped<AssessmentService>();
+        services.AddScoped<IUserDirectory, UserDirectory>();
         services.AddScoped<OpportunityImportService>();
         services.AddScoped<SavedSearchService>();
         services.AddScoped<DocumentService>();

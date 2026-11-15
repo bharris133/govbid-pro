@@ -1,6 +1,7 @@
 using GovBidPro.Application.Abstractions;
 using GovBidPro.Application.Common;
 using GovBidPro.Application.Opportunities;
+using GovBidPro.Domain.Entities;
 using GovBidPro.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,12 +13,16 @@ public sealed record UpcomingDeadlineDto(Guid Id, string Title, string? Agency, 
 
 public sealed record SavedSearchSummaryDto(Guid Id, string Name, NotificationFrequency NotificationFrequency, int OpenMatches, int NewMatchesLast7Days);
 
+/// <summary>Counts of the company's latest decision per opportunity.</summary>
+public sealed record DecisionCountsDto(int Go, int NoGo, int Watch, int Undecided);
+
 public sealed record DashboardDto(
     DateTimeOffset GeneratedAt,
     DiscoverySummaryDto Discovery,
     IReadOnlyList<UpcomingDeadlineDto> UpcomingDeadlines,
     IReadOnlyList<SavedSearchSummaryDto> SavedSearches,
-    IReadOnlyList<SourceFreshnessDto> Sources);
+    IReadOnlyList<SourceFreshnessDto> Sources,
+    DecisionCountsDto Decisions);
 
 /// <summary>
 /// Discovery dashboard (P1.1): what is open, what is due soon, what is new, and how each of the
@@ -72,6 +77,15 @@ public sealed class DashboardService(IAppDbContext db, ITenantContext tenant, Ti
             .Select(s => new SourceFreshnessDto(s.SourceKey, s.IsLiveSource, s.LastSuccessfulSyncAt, s.LastAttemptAt, s.LastErrorCode))
             .ToListAsync(cancellationToken);
 
-        return new DashboardDto(now, discovery, upcoming, summaries, sources);
+        var decisions = await db.OpportunityAssessments.AsNoTracking()
+            .Where(a => a.TenantId == tenantId && !db.OpportunityAssessments.Any(b => b.TenantId == tenantId && b.OpportunityId == a.OpportunityId && b.Sequence > a.Sequence))
+            .GroupBy(a => a.Decision)
+            .Select(g => new { Decision = g.Key, Count = g.Count() })
+            .ToListAsync(cancellationToken);
+        int CountOf(GoNoGoDecision decision) => decisions.Where(d => d.Decision == decision).Select(d => d.Count).SingleOrDefault();
+
+        return new DashboardDto(
+            now, discovery, upcoming, summaries, sources,
+            new DecisionCountsDto(CountOf(GoNoGoDecision.Go), CountOf(GoNoGoDecision.NoGo), CountOf(GoNoGoDecision.Watch), CountOf(GoNoGoDecision.Undecided)));
     }
 }

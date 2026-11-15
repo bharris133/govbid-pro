@@ -92,3 +92,5 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .preserve { white-space: pre-wrap; overflow-wrap: anywhere; }
 textarea { font: inherit; padding: .4rem .5rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--fg); width: 100%; }
 @media (max-width: 40rem) { .detail-row { grid-template-columns: 1fr; } }
+caption { text-align: left; color: var(--muted); padding: .25rem 0; }
+.score strong { font-size: 1.75rem; }

@@ -5,6 +5,7 @@ type PageInitializer = () => Promise<void>;
 const pages: Record<string, () => Promise<PageInitializer>> = {
   dashboard: async () => (await import('./pages/dashboardPage.js')).initDashboardPage,
   'opportunity-detail': async () => (await import('./pages/opportunityDetailPage.js')).initOpportunityDetailPage,
+  company: async () => (await import('./pages/companyPage.js')).initCompanyPage,
   opportunities: async () => (await import('./pages/opportunitiesPage.js')).initOpportunitiesPage,
   documents: async () => (await import('./pages/documentsPage.js')).initDocumentsPage,
 };
