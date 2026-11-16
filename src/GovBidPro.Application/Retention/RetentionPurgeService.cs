@@ -47,7 +47,12 @@ public sealed class RetentionPurgeService(IAppDbContext db, ITenantContext conte
 
             try
             {
-                await storage.DeleteAsync(document.StorageKey, cancellationToken);
+                var keys = await db.DocumentVersions.Where(v => v.DocumentId == document.Id && v.TenantId == document.TenantId).Select(v => v.StorageKey).ToListAsync(cancellationToken);
+                foreach (var key in keys.Append(document.StorageKey).Distinct(StringComparer.Ordinal))
+                {
+                    await storage.DeleteAsync(key, cancellationToken);
+                }
+
                 document.MarkPurged(now);
                 action?.MarkCompleted(now);
                 db.AuditEvents.Add(new Domain.Entities.AuditEvent(Guid.NewGuid(), document.TenantId, null, Auditing.AuditActions.DocumentPurge, "document", document.Id.ToString(), AuditOutcome.Success, "retention.recovery_window_expired", action?.CorrelationId ?? "retention-job", now));

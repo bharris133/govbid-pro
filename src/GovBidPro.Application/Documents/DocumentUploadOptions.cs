@@ -11,7 +11,8 @@ public sealed class DocumentUploadOptions
     public int MaxDocumentsPerTenant { get; set; }
 
     /// <summary>
-    /// "NotConfigured" (default; downloads denied until a scanner is configured) or
+    /// "NotConfigured" (default; downloads denied until a scanner is configured),
+    /// "ClamAv" (clamd over TCP, see Documents:ClamAv) or
     /// "DevelopmentBypass" (local Development environment only; rejected at startup elsewhere).
     /// </summary>
     public string MalwareScanMode { get; set; } = "NotConfigured";

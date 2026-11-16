@@ -69,6 +69,32 @@ public sealed class SavedSearchService(IAppDbContext db, ITenantContext tenant, 
         return ToDto(entity);
     }
 
+    public async Task<SavedSearchDto> UpdateAsync(Guid id, CreateSavedSearchCommand command, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        tenant.RequireRole(CompanyRole.ProposalWriter);
+        var tenantId = tenant.TenantId;
+        var entity = await db.SavedSearches.SingleOrDefaultAsync(s => s.Id == id && s.TenantId == tenantId, cancellationToken);
+        if (entity is null)
+        {
+            await audit.RecordAsync(AuditActions.AccessDenied, "saved_search", id.ToString(), AuditOutcome.Denied, "not_found_or_cross_tenant", cancellationToken);
+            throw new ResourceNotFoundException();
+        }
+
+        try
+        {
+            entity.Update(command.Name, command.Criteria ?? new OpportunitySearchCriteria(), command.NotificationFrequency);
+        }
+        catch (DomainException ex)
+        {
+            throw new RequestValidationException("saved_search.invalid", ex.Message);
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+        await audit.RecordAsync(AuditActions.SavedSearchUpdated, "saved_search", id.ToString(), AuditOutcome.Success, "ok", cancellationToken);
+        return ToDto(entity);
+    }
+
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
         tenant.RequireRole(CompanyRole.ProposalWriter);

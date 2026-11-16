@@ -45,4 +45,24 @@ public sealed class OpportunityFilterTests
         var result = OpportunityFilter.Apply(Data.AsQueryable(), new OpportunitySearchCriteria { NoticeTypes = [SourceNoticeType.SourcesSought] }).ToList();
         Assert.Equal("2", Assert.Single(result).ExternalId);
     }
+
+    [Fact]
+    public void Open_only_excludes_award_notices_and_passed_deadlines_but_keeps_notices_without_a_deadline()
+    {
+        Opportunity WithDue(string id, DateTimeOffset? due, SourceNoticeType type = SourceNoticeType.Solicitation)
+        {
+            var o = new Opportunity(Guid.NewGuid(), "fixture", id, false);
+            var content = new OpportunityContent("Notice " + id, null, null, null, null, type, null, ResponseType.Rfp, "v1", null, null, null, null, null, Now, Now, new ResponseDeadline(due, null, null), null, null);
+            var (hash, snapshot) = OpportunityImportService.ComputeContentHash(content);
+            o.ApplySourceContent(content, hash, snapshot, Guid.NewGuid(), Now);
+            return o;
+        }
+
+        var data = new List<Opportunity> { WithDue("past", Now.AddDays(-1)), WithDue("future", Now.AddDays(3)), WithDue("none", null), WithDue("award", Now.AddDays(3), SourceNoticeType.AwardNotice) };
+        var open = OpportunityFilter.Apply(data.AsQueryable(), new OpportunitySearchCriteria { OpenOnly = true }, Now).Select(o => o.ExternalId).ToList();
+        Assert.Equal(["future", "none"], open);
+
+        var dueSoon = OpportunityFilter.Apply(data.AsQueryable(), new OpportunitySearchCriteria { DueBefore = Now.AddDays(1) }, Now).Select(o => o.ExternalId).ToList();
+        Assert.Equal(["past"], dueSoon);
+    }
 }

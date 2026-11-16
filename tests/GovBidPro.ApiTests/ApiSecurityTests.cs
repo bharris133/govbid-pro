@@ -125,6 +125,8 @@ public sealed class ApiSecurityTests(PostgresFixture postgres) : IAsyncLifetime
     {
         using var regular = await _factory.CreateCompanyUserClientAsync("Regular Co");
         Assert.Equal(HttpStatusCode.Forbidden, (await regular.GetAsync("/api/v1/admin/imports")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await regular.GetAsync("/api/v1/admin/imports/sources")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await regular.PostAsync("/api/v1/admin/imports/sync", null)).StatusCode);
 
         using var adminWithoutMfa = _factory.CreateBrowserClient();
         await GovBidProFactory.SignInAsync(adminWithoutMfa, await _factory.CreateUserAsync(PlatformRoles.PlatformAdmin));
@@ -153,6 +155,7 @@ public sealed class ApiSecurityTests(PostgresFixture postgres) : IAsyncLifetime
         Assert.False(me.RootElement.GetProperty("aiPlatformEnabled").GetBoolean());
         Assert.False(me.RootElement.GetProperty("aiEnabledForTenant").GetBoolean());
         Assert.False(me.RootElement.GetProperty("samGovLiveIntegrationVerified").GetBoolean());
+        Assert.False(me.RootElement.GetProperty("samGovSyncEnabled").GetBoolean());
         Assert.Equal("CompanyAdmin", me.RootElement.GetProperty("role").GetString());
     }
 

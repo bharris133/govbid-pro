@@ -23,6 +23,9 @@ public sealed class SavedSearchesController(SavedSearchService searches) : Contr
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
+    [HttpPut("{id:guid}")]
+    public Task<SavedSearchDto> Update(Guid id, CreateSavedSearchCommand command, CancellationToken cancellationToken) => searches.UpdateAsync(id, command, cancellationToken);
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {

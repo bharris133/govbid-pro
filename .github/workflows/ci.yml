@@ -99,6 +99,17 @@ jobs:
           CI: "true"
         run: npm run test:browser -- --trace off
 
+      - name: Backup and restore drill (pg_dump, restore, verify)
+        env:
+          PGHOST: localhost
+          PGUSER: govbid
+          PGPASSWORD: ci_only_password
+          SOURCE_DB: govbid_smoke
+        run: |
+          pkill -f GovBidPro.Web || true   # stop writes so row counts are stable
+          sleep 2
+          bash scripts/restore-drill.sh
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4

@@ -1,6 +1,11 @@
 using GovBidPro.Application.Abstractions;
 using GovBidPro.Application.Ai;
+using GovBidPro.Application.Assessments;
+using GovBidPro.Application.Collaboration;
+using GovBidPro.Application.Companies;
 using GovBidPro.Application.Documents;
+using GovBidPro.Application.Opportunities;
+using GovBidPro.Application.Proposals;
 using GovBidPro.Application.Retention;
 using GovBidPro.Application.SavedSearches;
 using GovBidPro.Application.Security;
@@ -8,6 +13,7 @@ using GovBidPro.Domain.Entities;
 using GovBidPro.Domain.Enums;
 using GovBidPro.Infrastructure.Identity;
 using GovBidPro.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -60,7 +66,8 @@ public sealed class TestWorld(string connectionString, MutableTimeProvider clock
     public async Task<(Guid TenantId, string UserId)> CreateCompanyAsync(string name, bool aiConsent = false)
     {
         await using var db = Context(PostgresFixture.SystemContext());
-        var user = new ApplicationUser { Id = Guid.NewGuid().ToString(), UserName = $"{Guid.NewGuid():N}@example.test", Email = $"{Guid.NewGuid():N}@example.test" };
+        var email = $"{Guid.NewGuid():N}@example.test";
+        var user = new ApplicationUser { Id = Guid.NewGuid().ToString(), UserName = email, Email = email, NormalizedEmail = email.ToUpperInvariant(), NormalizedUserName = email.ToUpperInvariant() };
         db.Users.Add(user);
         var company = new Company(Guid.NewGuid(), name, Clock.GetUtcNow());
         if (aiConsent)
@@ -74,6 +81,55 @@ public sealed class TestWorld(string connectionString, MutableTimeProvider clock
         return (company.Id, user.Id);
     }
 
+    /// <summary>Imports public notices through the real import service (system context).</summary>
+    public async Task ImportAsync(params ImportedOpportunity[] notices)
+    {
+        await using var db = Context(PostgresFixture.SystemContext());
+        var summary = await new OpportunityImportService(db, Clock, NullLogger<OpportunityImportService>.Instance)
+            .RunAsync(new ListOpportunitySource(notices), maxPages: 5, CancellationToken.None);
+        if (summary.Status != ImportRunStatus.Succeeded)
+        {
+            throw new InvalidOperationException($"Test import failed: {summary.Status}.");
+        }
+    }
+
+    public ImportedOpportunity Notice(string id, string title = "Request for Proposal: Test services", int dueInDays = 20, string naics = "541511", string? state = "VA", string? setAside = null, string? agency = "Example Agency", SourceNoticeType type = SourceNoticeType.Solicitation, string? description = null) => new()
+    {
+        ExternalId = id,
+        Title = title,
+        Description = description,
+        Agency = agency,
+        NoticeType = type,
+        SourceNoticeTypeRaw = type.ToString(),
+        NaicsCode = naics,
+        SetAside = setAside,
+        PlaceOfPerformanceState = state,
+        PostedAt = Clock.GetUtcNow().AddDays(-1),
+        ResponseDueAt = Clock.GetUtcNow().AddDays(dueInDays),
+        ResponseDueOriginalText = "See solicitation",
+        ResponseDueTimeZone = "America/New_York",
+        SubmissionInstructions = "Submit as instructed in the solicitation (test).",
+        SourceUrl = $"https://example.invalid/test/{id}",
+    };
+
+    public async Task<Guid> OpportunityIdAsync(string externalId)
+    {
+        await using var db = Context(PostgresFixture.SystemContext());
+        return await db.Opportunities.Where(o => o.ExternalId == externalId).Select(o => o.Id).SingleAsync();
+    }
+
+    /// <summary>Adds another active member to an existing company. Returns the new user's id.</summary>
+    public async Task<string> AddMemberAsync(Guid tenantId, CompanyRole role, string? email = null)
+    {
+        await using var db = Context(PostgresFixture.SystemContext());
+        email ??= $"{Guid.NewGuid():N}@example.test";
+        var user = new ApplicationUser { Id = Guid.NewGuid().ToString(), UserName = email, Email = email, NormalizedEmail = email.ToUpperInvariant(), NormalizedUserName = email.ToUpperInvariant() };
+        db.Users.Add(user);
+        db.CompanyMemberships.Add(new CompanyMembership(Guid.NewGuid(), tenantId, user.Id, role, MembershipStatus.Active, Clock.GetUtcNow()));
+        await db.SaveChangesAsync();
+        return user.Id;
+    }
+
     public async Task SyncRetentionAsync()
     {
         await using var db = Context(PostgresFixture.SystemContext());
@@ -83,9 +139,54 @@ public sealed class TestWorld(string connectionString, MutableTimeProvider clock
     public SavedSearchService SavedSearches(GovBidProDbContext db, ITenantContext tenant, RecordingAuditLog? audit = null) =>
         new(db, tenant, audit ?? new RecordingAuditLog(), Clock);
 
+    public AssessmentOptions Assessment { get; set; } = new();
+
+    public AssessmentService Assessments(GovBidProDbContext db, ITenantContext tenant, RecordingAuditLog? audit = null) =>
+        new(db, tenant, audit ?? new RecordingAuditLog(), new DbUserDirectory(db), Options.Create(Assessment), Clock);
+
+    public CollaborationOptions Collaboration { get; set; } = new() { PublicBaseUrl = "https://app.example.test", RequireConfirmedEmailToAcceptInvitation = false };
+
+    public RecordingEmailSender Email { get; } = new();
+
+    public NotificationService Notifications(GovBidProDbContext db, ITenantContext tenant) =>
+        new(db, tenant, Email, new DbUserDirectory(db), Options.Create(Collaboration), Clock, NullLogger<NotificationService>.Instance);
+
+    public TaskService Tasks(GovBidProDbContext db, ITenantContext tenant, RecordingAuditLog? audit = null) =>
+        new(db, tenant, audit ?? new RecordingAuditLog(), new DbUserDirectory(db), Notifications(db, tenant), Clock);
+
+    public CommentService Comments(GovBidProDbContext db, ITenantContext tenant, RecordingAuditLog? audit = null) =>
+        new(db, tenant, audit ?? new RecordingAuditLog(), new DbUserDirectory(db), Notifications(db, tenant), Clock);
+
+    public InvitationService Invitations(GovBidProDbContext db, ITenantContext tenant, RecordingAuditLog? audit = null) =>
+        new(db, tenant, audit ?? new RecordingAuditLog(), new DbUserDirectory(db), Email, Notifications(db, tenant), Options.Create(Collaboration), Clock, NullLogger<InvitationService>.Instance);
+
+    public MemberService Members(GovBidProDbContext db, ITenantContext tenant, RecordingAuditLog? audit = null) =>
+        new(db, tenant, new DbUserDirectory(db), audit ?? new RecordingAuditLog(), Options.Create(Collaboration), Clock);
+
+    public SavedSearchAlertService Alerts(GovBidProDbContext db, ITenantContext tenant) =>
+        new(db, tenant, Notifications(db, tenant), Options.Create(Collaboration), Clock, NullLogger<SavedSearchAlertService>.Instance);
+
+    /// <summary>Creates a sign-in account with no company. Returns its id.</summary>
+    public async Task<string> CreateUserAsync(string email, bool confirmed = true)
+    {
+        await using var db = Context(PostgresFixture.SystemContext());
+        var user = new ApplicationUser { Id = Guid.NewGuid().ToString(), UserName = email, Email = email, NormalizedEmail = email.ToUpperInvariant(), NormalizedUserName = email.ToUpperInvariant(), EmailConfirmed = confirmed };
+        db.Users.Add(user);
+        await db.SaveChangesAsync();
+        return user.Id;
+    }
+
+    public ProposalOptions Proposal { get; set; } = new();
+
+    public ProposalService Proposals(GovBidProDbContext db, ITenantContext tenant, RecordingAuditLog? audit = null, IProposalNotifier? notifier = null) =>
+        new(db, tenant, audit ?? new RecordingAuditLog(), new DbUserDirectory(db), notifier ?? new NoOpProposalNotifier(), Options.Create(Proposal), Clock);
+
     public DocumentService Documents(GovBidProDbContext db, ITenantContext tenant, RecordingAuditLog? audit = null) =>
         new(db, tenant, audit ?? new RecordingAuditLog(), Storage, Scanner, new DocumentDataPolicyEvaluator(db, Options.Create(DataHandling)),
-            new RetentionPolicyCatalog(db, Options.Create(Retention), Clock), new FixedCorrelation(), Options.Create(Uploads), Clock);
+            new RetentionPolicyCatalog(db, Options.Create(Retention), Clock), new FixedCorrelation(), new DbUserDirectory(db), Options.Create(Uploads), Clock);
+
+    public DocumentRescanService Rescan(GovBidProDbContext db, ITenantContext tenant) =>
+        new(db, tenant, Storage, Scanner, Clock, NullLogger<DocumentRescanService>.Instance);
 
     public RetentionPurgeService Purge(GovBidProDbContext db, ITenantContext tenant) =>
         new(db, tenant, Storage, Clock, Options.Create(Retention), NullLogger<RetentionPurgeService>.Instance);
@@ -100,5 +201,32 @@ public sealed class TestWorld(string connectionString, MutableTimeProvider clock
     {
         var bytes = System.Text.Encoding.UTF8.GetBytes(text);
         return new UploadDocumentCommand(fileName, contentType, bytes.Length, new MemoryStream(bytes), new UploadDeclaration(classification, affirm, affirm));
+    }
+}
+
+/// <summary>Single-page in-memory source for tests. Not live data.</summary>
+public sealed class ListOpportunitySource(IReadOnlyList<ImportedOpportunity> items, string key = "test") : IOpportunitySource
+{
+    public string SourceKey => key;
+
+    public bool IsLive => false;
+
+    public Task<OpportunityImportPage> FetchAsync(OpportunityImportCursor? cursor, CancellationToken cancellationToken) =>
+        Task.FromResult(new OpportunityImportPage(items, null));
+}
+
+/// <summary>User lookup over the test database (mirrors the production adapter).</summary>
+public sealed class DbUserDirectory(GovBidProDbContext db) : IUserDirectory
+{
+    public async Task<IReadOnlyDictionary<string, DirectoryUser>> GetAsync(IReadOnlyCollection<string> userIds, CancellationToken cancellationToken) =>
+        await db.Users.AsNoTracking().Where(u => userIds.Contains(u.Id))
+            .Select(u => new DirectoryUser(u.Id, u.Email ?? u.Id, u.EmailConfirmed))
+            .ToDictionaryAsync(u => u.UserId, StringComparer.Ordinal, cancellationToken);
+
+    public async Task<DirectoryUser?> FindByEmailAsync(string email, CancellationToken cancellationToken)
+    {
+        var normalized = email.Trim().ToUpperInvariant();
+        return await db.Users.AsNoTracking().Where(u => u.NormalizedEmail == normalized)
+            .Select(u => new DirectoryUser(u.Id, u.Email ?? u.Id, u.EmailConfirmed)).SingleOrDefaultAsync(cancellationToken);
     }
 }

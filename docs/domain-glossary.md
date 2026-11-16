@@ -22,3 +22,19 @@
 | **Retention policy** | Versioned, configured period for a data class. Release 1 values are provisional (D-02) pending legal review (LEG-01). |
 | **Legal hold** | Flag that suspends eligible destruction. |
 | **SubmittedExternally** | Proposal state recording user-entered evidence that the user submitted elsewhere. |
+| **Company fit profile** | What a company states about itself for scoring: NAICS codes, set-aside programs it says it qualifies for, capability keywords, preferred states and agencies, minimum days to respond. Self-declared; never verified by GovBid Pro. |
+| **Fit score** | Rule-based 0-100 screening score (`fit-v1`): NAICS 30, set-aside 20, keywords 20, place 10, agency 10, time 10. Criteria without data are left out. Not a win probability. |
+| **Assessment** | Immutable company-specific record of a fit score, its criteria and a Go/No-go/Watch decision with author, time, rationale and the notice revision scored. The sequence of assessments is the audit trail. |
+| **Proposal** | A company's response to one opportunity. Snapshots the notice revision and deadline when started. One open proposal per opportunity per company. |
+| **Stage** | Proposal status: Draft, In progress, In review, Approved, Ready for submission, Submitted (outside GovBid Pro), Won, Lost, Cancelled. The transitions are fixed; the display names are configurable (`Proposals:StageLabels`). |
+| **Compliance matrix** | The list of requirements extracted by users from the solicitation (reference such as L.4.2, text, source location, mandatory flag, response section, owner, evidence and status). |
+| **Compliance status** | Not started, In progress, Needs review, Compliant, or Exception. An Exception must explain itself in the evidence field. |
+| **Review round** | The reviews requested since the proposal last entered In review. Approval needs at least one approval, no pending reviews and no changes requested in the current round. |
+| **Document version** | One stored file of a document. Uploading a new version keeps earlier ones; each is screened and scanned on its own. The document shows its current (highest) version. |
+| **Template** | A company document marked for reuse (boilerplate, capability statement). Copying it into a proposal creates an independent document. |
+| **Rescan** | Background job that screens stored versions with no malware verdict (scanner was off or unreachable). Malware quarantines the whole document. |
+| **Invitation** | A single-use, expiring offer to join a company with a role, bound to one email address. Only a hash of its secret is stored. |
+| **Notification** | An in-app message for one member (assignment, review, task, comment, join, saved-search alert), optionally also emailed. Links only point inside the app. |
+| **Task** | A piece of work with an optional assignee, due date and proposal. The assignee can always update its status. |
+| **Comment** | Discussion on a proposal, optionally about one requirement. Open to every member, including reviewers. |
+| **Saved-search alert** | A Daily or Weekly summary of notices that newly match a saved search. Each notice is reported once per search. |

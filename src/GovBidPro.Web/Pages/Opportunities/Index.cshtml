@@ -49,8 +49,29 @@
             <option value="NoResponseExpected">No response expected</option>
         </select>
     </div>
+    <div class="field">
+        <label for="f-setaside">Set-aside (exact text)</label>
+        <input id="f-setaside" name="setAside" maxlength="100" />
+    </div>
+    <div class="field">
+        <label for="f-posted-from">Posted on or after</label>
+        <input id="f-posted-from" name="postedFrom" type="date" />
+    </div>
+    <div class="field">
+        <label for="f-due-before">Response due on or before</label>
+        <input id="f-due-before" name="dueBefore" type="date" />
+    </div>
+    <div class="field">
+        <label for="f-sort">Sort by</label>
+        <select id="f-sort" name="sort">
+            <option value="PostedNewest">Newest posted</option>
+            <option value="DueSoonest">Response due soonest</option>
+        </select>
+    </div>
+    <label class="check"><input type="checkbox" id="f-open" name="openOnly" value="true" /> Open for response only</label>
     <div class="actions">
         <button type="submit">Search</button>
+        <button type="reset" class="secondary">Clear filters</button>
     </div>
 </form>
 
@@ -59,6 +80,12 @@
     <form id="save-search" class="inline-form">
         <label for="s-name">Name</label>
         <input id="s-name" name="name" required maxlength="120" />
+        <label for="s-frequency">Alerts</label>
+        <select id="s-frequency" name="notificationFrequency">
+            <option value="None">No alerts</option>
+            <option value="Daily">Daily digest</option>
+            <option value="Weekly">Weekly digest</option>
+        </select>
         <button type="submit">Save search</button>
     </form>
     <p id="save-status" role="status" aria-live="polite"></p>
@@ -70,4 +97,5 @@
     <h2 id="results-heading">Results</h2>
     <p id="results-summary" role="status" aria-live="polite"></p>
     <div id="results"></div>
+    <nav id="pagination" class="pagination" aria-label="Result pages"></nav>
 </section>

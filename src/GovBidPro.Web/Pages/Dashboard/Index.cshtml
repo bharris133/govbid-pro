@@ -1,0 +1,28 @@
+@page
+@model GovBidPro.Web.Pages.Dashboard.IndexModel
+@{
+    ViewData["Title"] = "Dashboard";
+    ViewData["Page"] = "dashboard";
+}
+<h1>Dashboard</h1>
+<div id="source-status" class="notice" role="status" aria-live="polite">Loading source status…</div>
+<p id="dashboard-status" role="status" aria-live="polite"></p>
+
+<section aria-labelledby="discovery-heading">
+    <h2 id="discovery-heading">Opportunity discovery</h2>
+    <dl id="discovery-stats" class="stats"></dl>
+</section>
+
+<div class="columns">
+    <section aria-labelledby="deadlines-heading" class="panel">
+        <h2 id="deadlines-heading">Upcoming response deadlines</h2>
+        <p class="muted">The solicitation is authoritative for every deadline. Verify the date and time zone at the source.</p>
+        <div id="upcoming-deadlines"></div>
+    </section>
+    <section aria-labelledby="searches-heading" class="panel">
+        <h2 id="searches-heading">Saved searches</h2>
+        <div id="saved-search-summary"></div>
+        <p><a href="/Opportunities">Search opportunities and save a search</a></p>
+    </section>
+</div>
+<div id="dashboard-extra"></div>

@@ -22,11 +22,37 @@ public interface IAppDbContext
 
     DbSet<StoredDocument> StoredDocuments { get; }
 
+    DbSet<DocumentVersion> DocumentVersions { get; }
+
+    DbSet<CompanyProfile> CompanyProfiles { get; }
+
+    DbSet<OpportunityAssessment> OpportunityAssessments { get; }
+
+    DbSet<Proposal> Proposals { get; }
+
+    DbSet<ProposalEvent> ProposalEvents { get; }
+
+    DbSet<ProposalSection> ProposalSections { get; }
+
+    DbSet<ProposalRequirement> ProposalRequirements { get; }
+
+    DbSet<ProposalReview> ProposalReviews { get; }
+
     DbSet<RetentionPolicy> RetentionPolicies { get; }
 
     DbSet<RetentionAction> RetentionActions { get; }
 
     DbSet<AuditEvent> AuditEvents { get; }
+
+    DbSet<Notification> Notifications { get; }
+
+    DbSet<WorkTask> WorkTasks { get; }
+
+    DbSet<Comment> Comments { get; }
+
+    DbSet<Invitation> Invitations { get; }
+
+    DbSet<SavedSearchAlert> SavedSearchAlerts { get; }
 
     DbSet<AiRequestRecord> AiRequestRecords { get; }
 

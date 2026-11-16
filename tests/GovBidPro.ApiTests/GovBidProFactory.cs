@@ -30,6 +30,9 @@ public sealed partial class GovBidProFactory(string connectionString) : WebAppli
             ["OpportunitySources:Fixture:ImportOnStartup"] = "true",
             ["RateLimiting:RequestsPerMinute"] = "10000",
             ["RateLimiting:LoginPerMinute"] = "10000",
+            ["Email:Provider"] = "Log",
+            ["Collaboration:RequireConfirmedEmailToAcceptInvitation"] = "false",
+            ["Collaboration:PublicBaseUrl"] = "https://app.example.test",
         }));
     }
 

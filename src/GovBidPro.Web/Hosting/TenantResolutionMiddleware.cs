@@ -11,7 +11,7 @@ namespace GovBidPro.Web.Hosting;
 /// </summary>
 internal sealed class TenantResolutionMiddleware(RequestDelegate next)
 {
-    private static readonly string[] TenantPagePrefixes = ["/Opportunities", "/Documents"];
+    private static readonly string[] TenantPagePrefixes = ["/Dashboard", "/Opportunities", "/Documents", "/Proposals", "/Tasks", "/Company", "/Notifications"];
 
     public async Task InvokeAsync(HttpContext context, TenantContextHolder holder, CompanyService companies)
     {

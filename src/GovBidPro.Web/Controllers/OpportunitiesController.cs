@@ -29,6 +29,12 @@ public sealed class OpportunitySearchQuery
 
     public DateTimeOffset? DueAfter { get; set; }
 
+    public DateTimeOffset? DueBefore { get; set; }
+
+    public bool OpenOnly { get; set; }
+
+    public OpportunitySort Sort { get; set; }
+
     public int Page { get; set; } = 1;
 
     public int PageSize { get; set; } = 25;
@@ -45,6 +51,8 @@ public sealed class OpportunitySearchQuery
         PostedFrom = PostedFrom,
         PostedTo = PostedTo,
         DueAfter = DueAfter,
+        DueBefore = DueBefore,
+        OpenOnly = OpenOnly,
     };
 }
 
@@ -55,7 +63,7 @@ public sealed class OpportunitiesController(OpportunityQueryService queries) : C
 {
     [HttpGet]
     public Task<OpportunitySearchResult> Search([FromQuery] OpportunitySearchQuery query, CancellationToken cancellationToken) =>
-        queries.SearchAsync(query.ToCriteria(), query.Page, query.PageSize, cancellationToken);
+        queries.SearchAsync(query.ToCriteria(), query.Page, query.PageSize, cancellationToken, query.Sort);
 
     [HttpGet("{id:guid}")]
     public Task<OpportunityDetailDto> Get(Guid id, CancellationToken cancellationToken) => queries.GetAsync(id, cancellationToken);
