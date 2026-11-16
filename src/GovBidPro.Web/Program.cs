@@ -72,15 +72,25 @@ services.AddControllers(options => options.Filters.Add(new AutoValidateAntiforge
     .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 services.AddRazorPages(options =>
 {
+    options.Conventions.AuthorizeFolder("/Dashboard");
     options.Conventions.AuthorizeFolder("/Opportunities");
     options.Conventions.AuthorizeFolder("/Documents");
+    options.Conventions.AuthorizeFolder("/Company");
+    options.Conventions.AuthorizeFolder("/Proposals");
     options.Conventions.AuthorizeFolder("/Onboarding");
+    options.Conventions.AuthorizeFolder("/Tasks");
+    options.Conventions.AuthorizeFolder("/Notifications");
+    options.Conventions.AuthorizeFolder("/Invitations");
 });
 
 services.AddProblemDetails();
 services.AddExceptionHandler<ProblemDetailsExceptionHandler>();
 services.AddHealthChecks().AddDbContextCheck<GovBidProDbContext>("database", tags: ["ready"]);
 services.AddHostedService<RetentionPurgeHostedService>();
+services.AddHostedService<OpportunitySyncHostedService>();
+services.AddHostedService<DocumentRescanHostedService>();
+services.AddHostedService<SavedSearchAlertHostedService>();
+services.AddTransient<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender, IdentityEmailSender>();
 
 services.Configure<ForwardedHeadersOptions>(options =>
 {

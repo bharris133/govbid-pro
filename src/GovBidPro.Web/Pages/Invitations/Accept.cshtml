@@ -1,0 +1,27 @@
+@page
+@model GovBidPro.Web.Pages.Invitations.AcceptModel
+@{
+    ViewData["Title"] = "Accept invitation";
+}
+<h1>Join a company</h1>
+@if (Model.Error is not null)
+{
+    <p class="error" role="alert">@Model.Error</p>
+}
+@if (Model.Invitation is null)
+{
+    <p>This invitation link is not valid. Ask your company admin to send a new invitation.</p>
+}
+else if (Model.Invitation.State != GovBidPro.Domain.Entities.InvitationState.Pending)
+{
+    <p>This invitation is no longer valid (@Model.StateText). Ask your company admin to send a new one.</p>
+}
+else
+{
+    <p>You have been invited to join <strong>@Model.Invitation.CompanyName</strong> as <strong>@Model.RoleText</strong>.</p>
+    <p class="muted">The invitation was sent to @Model.Invitation.Email and expires on @Model.Invitation.ExpiresAt.UtcDateTime.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) (UTC). You must be signed in with that email address.</p>
+    <form method="post" class="panel">
+        <input type="hidden" asp-for="Token" />
+        <button type="submit">Accept and join</button>
+    </form>
+}

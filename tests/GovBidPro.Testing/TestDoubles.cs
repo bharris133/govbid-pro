@@ -90,3 +90,23 @@ public sealed class RecordingAuditLog : IAuditLog
         return Task.CompletedTask;
     }
 }
+
+public sealed class RecordingEmailSender : GovBidPro.Application.Abstractions.IEmailSender
+{
+    public List<GovBidPro.Application.Abstractions.EmailMessage> Sent { get; } = [];
+
+    public bool IsEnabled { get; set; } = true;
+
+    public bool Fail { get; set; }
+
+    public Task SendAsync(GovBidPro.Application.Abstractions.EmailMessage message, CancellationToken cancellationToken)
+    {
+        if (Fail)
+        {
+            throw new InvalidOperationException("Simulated email outage.");
+        }
+
+        Sent.Add(message);
+        return Task.CompletedTask;
+    }
+}

@@ -22,15 +22,9 @@ public sealed class SavedSearch : ITenantOwned
 
         ArgumentNullException.ThrowIfNull(criteria);
         ArgumentException.ThrowIfNullOrWhiteSpace(createdByUserId);
-        var trimmed = name?.Trim() ?? string.Empty;
-        if (trimmed.Length is 0 or > 120)
-        {
-            throw new DomainException("Saved search name must be 1-120 characters.");
-        }
-
         Id = id;
         TenantId = tenantId;
-        Name = trimmed;
+        Name = NormalizeName(name);
         Criteria = criteria;
         NotificationFrequency = frequency;
         CreatedByUserId = createdByUserId;
@@ -52,6 +46,32 @@ public sealed class SavedSearch : ITenantOwned
     public DateTimeOffset CreatedAt { get; private set; }
 
     public DateTimeOffset? LastEvaluatedAt { get; private set; }
+
+    public void Update(string name, OpportunitySearchCriteria criteria, NotificationFrequency frequency)
+    {
+        ArgumentNullException.ThrowIfNull(criteria);
+        Name = NormalizeName(name);
+        Criteria = criteria;
+        NotificationFrequency = frequency;
+    }
+
+    public void RecordEvaluation(DateTimeOffset at) => LastEvaluatedAt = at;
+
+    /// <summary>When the alert job last checked this search for new matches.</summary>
+    public DateTimeOffset? LastAlertedAt { get; private set; }
+
+    public void RecordAlertCheck(DateTimeOffset at) => LastAlertedAt = at;
+
+    private static string NormalizeName(string? name)
+    {
+        var trimmed = name?.Trim() ?? string.Empty;
+        if (trimmed.Length is 0 or > 120)
+        {
+            throw new DomainException("Saved search name must be 1-120 characters.");
+        }
+
+        return trimmed;
+    }
 }
 
 /// <summary>Structured search filters. Stored as JSON; all list filters are OR within a field and AND across fields.</summary>
@@ -76,4 +96,9 @@ public sealed class OpportunitySearchCriteria
     public DateTimeOffset? PostedTo { get; set; }
 
     public DateTimeOffset? DueAfter { get; set; }
+
+    public DateTimeOffset? DueBefore { get; set; }
+
+    /// <summary>When true, only notices that still accept a response (no deadline stated, or deadline in the future).</summary>
+    public bool OpenOnly { get; set; }
 }

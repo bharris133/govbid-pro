@@ -22,8 +22,13 @@
             <ul>
                 @if (SignInManager.IsSignedIn(User))
                 {
+                    <li><a href="/Dashboard">Dashboard</a></li>
                     <li><a href="/Opportunities">Opportunities</a></li>
+                    <li><a href="/Proposals">Proposals</a></li>
+                    <li><a href="/Tasks">Tasks</a></li>
                     <li><a href="/Documents">Documents</a></li>
+                    <li><a href="/Notifications">Notifications <span id="unread-badge" class="badge" hidden></span></a></li>
+                    <li><a href="/Company">Company</a></li>
                     <li><a href="/Identity/Account/Manage">Account</a></li>
                     <li>
                         <form method="post" action="/Identity/Account/Logout?returnUrl=%2F">

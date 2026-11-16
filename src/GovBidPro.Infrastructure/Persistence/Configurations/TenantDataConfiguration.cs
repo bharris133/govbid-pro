@@ -55,6 +55,29 @@ internal sealed class StoredDocumentConfiguration : IEntityTypeConfiguration<Sto
         builder.HasIndex(d => new { d.State, d.RecoverableUntil });
         builder.HasOne<Company>().WithMany().HasForeignKey(d => d.TenantId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<RetentionPolicy>().WithMany().HasForeignKey(d => d.RetentionPolicyId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(d => new { d.TenantId, d.ProposalId });
+        builder.HasIndex(d => new { d.TenantId, d.IsTemplate });
+        builder.HasOne<Proposal>().WithMany().HasForeignKey(d => d.ProposalId).OnDelete(DeleteBehavior.Restrict);
+    }
+}
+
+internal sealed class DocumentVersionConfiguration : IEntityTypeConfiguration<DocumentVersion>
+{
+    public void Configure(EntityTypeBuilder<DocumentVersion> builder)
+    {
+        builder.ToTable("document_versions");
+        builder.HasKey(v => v.Id);
+        builder.Property(v => v.FileName).HasMaxLength(200).IsRequired();
+        builder.Property(v => v.ContentType).HasMaxLength(128).IsRequired();
+        builder.Property(v => v.Sha256).HasMaxLength(64).IsRequired();
+        builder.Property(v => v.StorageKey).HasMaxLength(300).IsRequired();
+        builder.HasIndex(v => v.StorageKey).IsUnique();
+        builder.Property(v => v.ScanStatus).HasConversion<string>().HasMaxLength(32);
+        builder.Property(v => v.UploadedByUserId).HasMaxLength(450).IsRequired();
+        builder.Property(v => v.Note).HasMaxLength(DocumentVersion.MaxNoteLength);
+        builder.HasIndex(v => new { v.DocumentId, v.Number }).IsUnique();
+        builder.HasIndex(v => new { v.ScanStatus, v.UploadedAt });
+        builder.HasOne<StoredDocument>().WithMany().HasForeignKey(v => v.DocumentId).OnDelete(DeleteBehavior.Restrict);
     }
 }
 

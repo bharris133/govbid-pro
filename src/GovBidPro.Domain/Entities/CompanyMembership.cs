@@ -25,6 +25,7 @@ public sealed class CompanyMembership : ITenantOwned
         Role = role;
         Status = status;
         CreatedAt = createdAt;
+        EmailNotifications = true;
     }
 
     public Guid Id { get; private set; }
@@ -41,7 +42,34 @@ public sealed class CompanyMembership : ITenantOwned
 
     public bool IsActive => Status == MembershipStatus.Active;
 
-    public void ChangeRole(CompanyRole role) => Role = role;
+    /// <summary>Whether this member also gets notifications by email (in-app notifications are always kept).</summary>
+    public bool EmailNotifications { get; private set; }
 
-    public void Deprovision() => Status = MembershipStatus.Removed;
+    public DateTimeOffset? RemovedAt { get; private set; }
+
+    public void ChangeRole(CompanyRole role)
+    {
+        if (!Enum.IsDefined(role))
+        {
+            throw new DomainException("Unknown role.");
+        }
+
+        Role = role;
+    }
+
+    public void Deprovision(DateTimeOffset at)
+    {
+        Status = MembershipStatus.Removed;
+        RemovedAt = at;
+    }
+
+    /// <summary>A removed member who accepts a new invitation gets the same membership row back.</summary>
+    public void Reactivate(CompanyRole role)
+    {
+        ChangeRole(role);
+        Status = MembershipStatus.Active;
+        RemovedAt = null;
+    }
+
+    public void SetEmailNotifications(bool enabled) => EmailNotifications = enabled;
 }

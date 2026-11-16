@@ -19,8 +19,8 @@ public enum ProposalStatus
 }
 
 /// <summary>
-/// Allowed proposal status transitions. P0 ships the state machine with tests; the proposal
-/// aggregate, persistence and API arrive in P1.4.
+/// Allowed proposal status transitions. Display names are configurable (Proposals:StageLabels);
+/// the states and transitions themselves are fixed and tested.
 /// </summary>
 public static class ProposalLifecycle
 {
@@ -36,6 +36,9 @@ public static class ProposalLifecycle
         [ProposalStatus.Lost] = [],
         [ProposalStatus.Cancelled] = [],
     };
+
+    public static IReadOnlyList<ProposalStatus> NextStates(ProposalStatus from) =>
+        Allowed.TryGetValue(from, out var targets) ? targets : [];
 
     public static bool CanTransition(ProposalStatus from, ProposalStatus to) =>
         Allowed.TryGetValue(from, out var targets) && Array.IndexOf(targets, to) >= 0;

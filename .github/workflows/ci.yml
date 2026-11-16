@@ -39,13 +39,13 @@ jobs:
     env:
       GOVBID_TEST_POSTGRES: Host=localhost;Port=5432;Username=govbid;Password=ci_only_password;Database=postgres
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -99,6 +99,17 @@ jobs:
           CI: "true"
         run: npm run test:browser -- --trace off
 
+      - name: Backup and restore drill (pg_dump, restore, verify)
+        env:
+          PGHOST: localhost
+          PGUSER: govbid
+          PGPASSWORD: ci_only_password
+          SOURCE_DB: govbid_smoke
+        run: |
+          pkill -f GovBidPro.Web || true   # stop writes so row counts are stable
+          sleep 2
+          bash scripts/restore-drill.sh
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -115,7 +126,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -123,11 +134,11 @@ jobs:
         run: |
           docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.24.3 dir /repo --config /repo/.gitleaks.toml --redact --verbose --exit-code 1
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
 
@@ -149,7 +160,7 @@ jobs:
     timeout-minutes: 20
     needs: build-test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build image
         run: docker build -t govbidpro-web:${{ github.sha }} .
@@ -193,7 +204,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Compile Bicep templates and parameter files
         run: |
           az bicep install

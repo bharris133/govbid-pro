@@ -64,21 +64,31 @@ public sealed record SourceFreshnessDto(string SourceKey, bool IsLiveSource, Dat
 public sealed record OpportunitySearchResult(PagedResult<OpportunitySummaryDto> Results, IReadOnlyList<SourceFreshnessDto> Sources);
 
 /// <summary>Read side for public opportunity data. Requires an authenticated tenant member.</summary>
-public sealed class OpportunityQueryService(IAppDbContext db, ITenantContext tenant)
+public enum OpportunitySort
+{
+    /// <summary>Newest posted first (default).</summary>
+    PostedNewest = 0,
+
+    /// <summary>Earliest response deadline first; notices with no stated deadline last.</summary>
+    DueSoonest = 1,
+}
+
+public sealed class OpportunityQueryService(IAppDbContext db, ITenantContext tenant, TimeProvider clock)
 {
     public const int MaxPageSize = 100;
 
-    public async Task<OpportunitySearchResult> SearchAsync(OpportunitySearchCriteria criteria, int page, int pageSize, CancellationToken cancellationToken)
+    public async Task<OpportunitySearchResult> SearchAsync(OpportunitySearchCriteria criteria, int page, int pageSize, CancellationToken cancellationToken, OpportunitySort sort = OpportunitySort.PostedNewest)
     {
         tenant.RequireTenant();
         page = Math.Max(1, page);
         pageSize = Math.Clamp(pageSize, 1, MaxPageSize);
 
-        var query = OpportunityFilter.Apply(db.Opportunities.AsNoTracking(), criteria);
+        var query = OpportunityFilter.Apply(db.Opportunities.AsNoTracking(), criteria, clock.GetUtcNow());
         var total = await query.CountAsync(cancellationToken);
-        var items = await query
-            .OrderByDescending(o => o.PostedAt)
-            .ThenBy(o => o.Id)
+        var ordered = sort == OpportunitySort.DueSoonest
+            ? query.OrderBy(o => o.Deadline.DueAt == null).ThenBy(o => o.Deadline.DueAt).ThenBy(o => o.Id)
+            : query.OrderByDescending(o => o.PostedAt).ThenBy(o => o.Id);
+        var items = await ordered
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(o => new OpportunitySummaryDto(

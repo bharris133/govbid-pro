@@ -31,6 +31,32 @@ public sealed class GovBidProDbContext(DbContextOptions<GovBidProDbContext> opti
 
     public DbSet<StoredDocument> StoredDocuments => Set<StoredDocument>();
 
+    public DbSet<DocumentVersion> DocumentVersions => Set<DocumentVersion>();
+
+    public DbSet<CompanyProfile> CompanyProfiles => Set<CompanyProfile>();
+
+    public DbSet<OpportunityAssessment> OpportunityAssessments => Set<OpportunityAssessment>();
+
+    public DbSet<Proposal> Proposals => Set<Proposal>();
+
+    public DbSet<ProposalEvent> ProposalEvents => Set<ProposalEvent>();
+
+    public DbSet<ProposalSection> ProposalSections => Set<ProposalSection>();
+
+    public DbSet<ProposalRequirement> ProposalRequirements => Set<ProposalRequirement>();
+
+    public DbSet<ProposalReview> ProposalReviews => Set<ProposalReview>();
+
+    public DbSet<Notification> Notifications => Set<Notification>();
+
+    public DbSet<WorkTask> WorkTasks => Set<WorkTask>();
+
+    public DbSet<Comment> Comments => Set<Comment>();
+
+    public DbSet<Invitation> Invitations => Set<Invitation>();
+
+    public DbSet<SavedSearchAlert> SavedSearchAlerts => Set<SavedSearchAlert>();
+
     public DbSet<RetentionPolicy> RetentionPolicies => Set<RetentionPolicy>();
 
     public DbSet<RetentionAction> RetentionActions => Set<RetentionAction>();
@@ -73,7 +99,20 @@ public sealed class GovBidProDbContext(DbContextOptions<GovBidProDbContext> opti
         builder.Entity<CompanyMembership>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
         builder.Entity<SavedSearch>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
         builder.Entity<StoredDocument>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<DocumentVersion>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
         builder.Entity<RetentionAction>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<CompanyProfile>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<OpportunityAssessment>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<Proposal>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<ProposalEvent>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<ProposalSection>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<ProposalRequirement>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<ProposalReview>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<Notification>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<WorkTask>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<Comment>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<Invitation>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<SavedSearchAlert>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
         builder.Entity<AiRequestRecord>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
     }
 }

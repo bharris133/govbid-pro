@@ -4,7 +4,10 @@ using Microsoft.Extensions.Options;
 
 namespace GovBidPro.Infrastructure.Storage;
 
-/// <summary>Development storage on the local file system, outside the web root.</summary>
+/// <summary>
+/// File-system object storage outside the web root. Used as "Local" in development and as
+/// "FileSystem" on any host with a persistent volume (cloud-neutral).
+/// </summary>
 internal sealed partial class LocalFileObjectStorage : IObjectStorage
 {
     private readonly string _root;
