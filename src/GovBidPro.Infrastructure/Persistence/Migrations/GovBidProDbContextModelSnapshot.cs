@@ -262,6 +262,77 @@ namespace GovBidPro.Infrastructure.Persistence.Migrations
                     b.ToTable("company_profiles", (string)null);
                 });
 
+            modelBuilder.Entity("GovBidPro.Domain.Entities.DocumentVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ScanStatus")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTimeOffset?>("ScannedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Sha256")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("StorageKey")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UploadedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UploadedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StorageKey")
+                        .IsUnique();
+
+                    b.HasIndex("DocumentId", "Number")
+                        .IsUnique();
+
+                    b.HasIndex("ScanStatus", "UploadedAt");
+
+                    b.ToTable("document_versions", (string)null);
+                });
+
             modelBuilder.Entity("GovBidPro.Domain.Entities.ImportRun", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1074,11 +1145,17 @@ namespace GovBidPro.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<bool>("IsTemplate")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("LegalHold")
                         .HasColumnType("boolean");
 
                     b.Property<int>("ObjectVersion")
                         .HasColumnType("integer");
+
+                    b.Property<Guid?>("ProposalId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset?>("PurgedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1124,6 +1201,9 @@ namespace GovBidPro.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<uint>("Version")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -1132,12 +1212,18 @@ namespace GovBidPro.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ProposalId");
+
                     b.HasIndex("RetentionPolicyId");
 
                     b.HasIndex("StorageKey")
                         .IsUnique();
 
                     b.HasIndex("State", "RecoverableUntil");
+
+                    b.HasIndex("TenantId", "IsTemplate");
+
+                    b.HasIndex("TenantId", "ProposalId");
 
                     b.HasIndex("TenantId", "State");
 
@@ -1369,6 +1455,15 @@ namespace GovBidPro.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("GovBidPro.Domain.Entities.DocumentVersion", b =>
+                {
+                    b.HasOne("GovBidPro.Domain.Entities.StoredDocument", null)
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("GovBidPro.Domain.Entities.Opportunity", b =>
                 {
                     b.OwnsOne("GovBidPro.Domain.ValueObjects.ResponseDeadline", "Deadline", b1 =>
@@ -1502,6 +1597,11 @@ namespace GovBidPro.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("GovBidPro.Domain.Entities.StoredDocument", b =>
                 {
+                    b.HasOne("GovBidPro.Domain.Entities.Proposal", null)
+                        .WithMany()
+                        .HasForeignKey("ProposalId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("GovBidPro.Domain.Entities.RetentionPolicy", null)
                         .WithMany()
                         .HasForeignKey("RetentionPolicyId")

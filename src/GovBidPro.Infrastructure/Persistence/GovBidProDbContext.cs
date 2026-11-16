@@ -31,6 +31,8 @@ public sealed class GovBidProDbContext(DbContextOptions<GovBidProDbContext> opti
 
     public DbSet<StoredDocument> StoredDocuments => Set<StoredDocument>();
 
+    public DbSet<DocumentVersion> DocumentVersions => Set<DocumentVersion>();
+
     public DbSet<CompanyProfile> CompanyProfiles => Set<CompanyProfile>();
 
     public DbSet<OpportunityAssessment> OpportunityAssessments => Set<OpportunityAssessment>();
@@ -87,6 +89,7 @@ public sealed class GovBidProDbContext(DbContextOptions<GovBidProDbContext> opti
         builder.Entity<CompanyMembership>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
         builder.Entity<SavedSearch>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
         builder.Entity<StoredDocument>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<DocumentVersion>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
         builder.Entity<RetentionAction>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
         builder.Entity<CompanyProfile>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
         builder.Entity<OpportunityAssessment>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);

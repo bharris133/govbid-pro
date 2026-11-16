@@ -149,7 +149,10 @@ public sealed class TestWorld(string connectionString, MutableTimeProvider clock
 
     public DocumentService Documents(GovBidProDbContext db, ITenantContext tenant, RecordingAuditLog? audit = null) =>
         new(db, tenant, audit ?? new RecordingAuditLog(), Storage, Scanner, new DocumentDataPolicyEvaluator(db, Options.Create(DataHandling)),
-            new RetentionPolicyCatalog(db, Options.Create(Retention), Clock), new FixedCorrelation(), Options.Create(Uploads), Clock);
+            new RetentionPolicyCatalog(db, Options.Create(Retention), Clock), new FixedCorrelation(), new DbUserDirectory(db), Options.Create(Uploads), Clock);
+
+    public DocumentRescanService Rescan(GovBidProDbContext db, ITenantContext tenant) =>
+        new(db, tenant, Storage, Scanner, Clock, NullLogger<DocumentRescanService>.Instance);
 
     public RetentionPurgeService Purge(GovBidProDbContext db, ITenantContext tenant) =>
         new(db, tenant, Storage, Clock, Options.Create(Retention), NullLogger<RetentionPurgeService>.Instance);

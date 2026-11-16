@@ -10,5 +10,5 @@ These do not block P0 coding. Safe defaults are in place; each needs a product a
 | 4 | Which non-federal procurement sources to support | Adapter interface only; no other sources. | P2 |
 | 5 | Notification frequency options and channels | Saved searches store `None/Daily/Weekly`; no delivery yet. | P1.6 |
 | 6 | Response-type interpretation rules beyond explicit wording | Mapping rule v1 only maps explicit "RFI/RFQ/RFP" wording; everything else is `Undetermined` for a user to decide. | P1.1 |
-| 7 | Malware scanning product and cost | Not configured; downloads denied until scanned. | P1.5 |
+| 7 | Malware scanning product and cost | **Release 1 default (P1.5):** ClamAV behind `IMalwareScanner` (open source, no licence fee, portable container). Off until `Documents:MalwareScanMode=ClamAv` is set; downloads stay denied without a clean verdict. A different product is a new adapter, no application change. | Owner to confirm before production |
 | 8 | Email provider for confirmations and alerts | None; production requires one. | Before production |

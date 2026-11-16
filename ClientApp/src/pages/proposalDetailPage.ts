@@ -16,6 +16,7 @@ import {
 import { describeError, el, formatDate, link, requireElement } from '../components/dom.js';
 import { blockedReasonLabels, complianceLabels, responseTypeLabels } from '../labels.js';
 import type { ComplianceStatus, Member, ProposalDetail, Requirement, RequirementInput, ResponseType } from '../models/api.js';
+import { renderProposalFiles } from './proposalFiles.js';
 
 interface Context {
   id: string;
@@ -322,6 +323,7 @@ export async function initProposalDetailPage(): Promise<void> {
       render: (d) => {
         const closed = ['Won', 'Lost', 'Cancelled'].includes(d.status);
         document.title = `${d.title} · GovBid Pro`;
+        const extra = el('div', { attrs: { id: 'proposal-extra' } });
         target.replaceChildren(
           el('h1', { text: d.title }),
           el('p', {}, [el('span', { text: d.statusLabel, className: 'tag' }), el('span', { text: responseTypeLabels[d.responseType], className: 'tag' }), ...(d.opportunityIsLive ? [] : [el('span', { text: 'Demo fixture', className: 'tag fixture' })])]),
@@ -332,8 +334,9 @@ export async function initProposalDetailPage(): Promise<void> {
           matrix(d, ctx, closed),
           reviews(d, ctx, closed),
           history(d),
-          el('div', { attrs: { id: 'proposal-extra' } }),
+          extra,
         );
+        void renderProposalFiles(extra, d, closed);
         document.dispatchEvent(new CustomEvent('proposal:rendered', { detail: d }));
       },
     };

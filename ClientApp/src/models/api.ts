@@ -228,6 +228,23 @@ export interface DocumentSummary {
   createdAt: string;
   recoverableUntil: string | null;
   isDownloadable: boolean;
+  currentVersion: number;
+  proposalId: string | null;
+  isTemplate: boolean;
+  updatedAt: string;
+}
+
+export interface DocumentVersion {
+  number: number;
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  scanStatus: ScanStatus;
+  uploadedBy: string;
+  uploadedAt: string;
+  note: string | null;
+  isCurrent: boolean;
+  isDownloadable: boolean;
 }
 
 export interface ProblemDetails {

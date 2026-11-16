@@ -38,6 +38,16 @@ services:
     volumes:
       - storage-data:/data/storage
 
+  # Optional malware scanner: `docker compose --profile scan up`. Then set for the web service:
+  #   Documents__MalwareScanMode=ClamAv and Documents__ClamAv__Host=clamav
+  # The first start downloads virus signatures and can take a few minutes. Not exposed to the host.
+  clamav:
+    image: clamav/clamav:1.4
+    profiles: ["scan"]
+    volumes:
+      - clamav-data:/var/lib/clamav
+
 volumes:
+  clamav-data:
   db-data:
   storage-data:

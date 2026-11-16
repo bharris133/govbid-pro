@@ -99,3 +99,5 @@ caption { text-align: left; color: var(--muted); padding: .25rem 0; }
 .stages li.current { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 600; }
 tr.open-mandatory th { border-left: 4px solid var(--warn-border); }
 #proposal-warnings { padding-left: 2rem; }
+td.actions { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+tr.detail > td { background: var(--bg); }

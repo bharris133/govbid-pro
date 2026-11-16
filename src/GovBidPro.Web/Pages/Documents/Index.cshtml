@@ -18,6 +18,11 @@
         <label><input type="radio" name="classification" value="ConfidentialCommercial" checked /> Confidential commercial (proposal drafts, pricing, past performance)</label>
         <label><input type="radio" name="classification" value="BusinessInternal" /> Business internal (company profile, internal process)</label>
     </fieldset>
+    <div class="field">
+        <label for="u-proposal">Link to a proposal (optional)</label>
+        <select id="u-proposal" name="proposalId"><option value="">Not linked</option></select>
+    </div>
+    <label class="check"><input type="checkbox" name="isTemplate" value="true" /> Save as a reusable template (boilerplate your company copies into proposals)</label>
     <label class="check"><input type="checkbox" name="affirmPermittedToUpload" value="true" required /> I am permitted to upload this file to GovBid Pro.</label>
     <label class="check"><input type="checkbox" name="affirmNoProhibitedContent" value="true" required /> This file contains no classified information, CUI or FCI that must be safeguarded.</label>
     <button type="submit">Upload</button>
@@ -26,5 +31,7 @@
 
 <section aria-labelledby="docs-heading">
     <h2 id="docs-heading">Your company's documents</h2>
+    <p>Uploading a new version keeps the earlier ones. Every version is screened before it can be downloaded.</p>
+    <label class="check"><input type="checkbox" id="templates-only" /> Show templates only</label>
     <div id="documents"></div>
 </section>

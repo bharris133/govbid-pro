@@ -29,6 +29,11 @@ public static class AuditActions
     public const string DocumentRestore = "document.restore";
     public const string DocumentQuarantine = "document.quarantine";
     public const string DocumentPurge = "document.purge";
+    public const string DocumentVersionAdded = "document.version_added";
+    public const string DocumentPlaced = "document.placed";
+    public const string DocumentCopied = "document.copied";
+    public const string DocumentScanned = "document.scanned";
+    public const string ExportGenerated = "export.generated";
     public const string AccessDenied = "access.denied";
     public const string AiRequest = "ai.request";
     public const string OpportunityImport = "opportunity.import";

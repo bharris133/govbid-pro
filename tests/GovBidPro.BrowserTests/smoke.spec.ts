@@ -81,6 +81,8 @@ test('company user can search fixture opportunities and save a search', async ({
   await page.getByRole('button', { name: 'Add requirement' }).click();
   await expect(page.locator('#compliance-matrix')).toContainText('L.4.2');
   await expect(page.locator('#compliance-summary')).toContainText('1');
+  await expect(page.locator('#proposal-exports')).toContainText('Compliance matrix (CSV)');
+  await expect(page.locator('#proposal-files')).toContainText('No files are linked');
   await page.locator('#status-actions').getByRole('button', { name: 'Move to In progress' }).click();
   await expect(page.locator('#proposal-history')).toContainText('In progress');
   await page.goto('/Proposals');
@@ -99,6 +101,26 @@ test('company user can search fixture opportunities and save a search', async ({
   await page.getByRole('button', { name: 'Upload' }).click();
   await expect(page.locator('#upload-status')).toContainText('was rejected');
   await expect(page.locator('#documents')).toContainText('No documents uploaded yet.');
+
+  // P1.5: a clean upload linked to the proposal gets version 1; a second version becomes current.
+  const fileInput = page.getByLabel('File (PDF, DOCX, XLSX, TXT, CSV, PNG or JPG)');
+  await fileInput.setInputFiles({ name: 'approach.txt', mimeType: 'text/plain', buffer: Buffer.from('Technical approach draft one.\n') });
+  await page.getByLabel('Link to a proposal (optional)').selectOption({ index: 1 });
+  await page.getByLabel('I am permitted to upload this file to GovBid Pro.').first().check();
+  await page.getByLabel('This file contains no classified information, CUI or FCI that must be safeguarded.').first().check();
+  await page.getByRole('button', { name: 'Upload', exact: true }).click();
+  await expect(page.locator('#upload-status')).toContainText('Upload complete.');
+  await expect(page.locator('#documents')).toContainText('approach.txt');
+  await expect(page.locator('#documents')).toContainText('Proposal:');
+  await page.getByRole('button', { name: 'Versions of approach.txt' }).click();
+  await expect(page.locator('#documents')).toContainText('Version 1 (current)');
+  await page.getByLabel('New version of approach.txt').setInputFiles({ name: 'approach.txt', mimeType: 'text/plain', buffer: Buffer.from('Technical approach draft two.\n') });
+  const versionForm = page.locator('#documents form');
+  await versionForm.getByLabel('I am permitted to upload this file to GovBid Pro.').check();
+  await versionForm.getByLabel('This file contains no classified information, CUI or FCI that must be safeguarded.').check();
+  await versionForm.getByRole('button', { name: 'Upload new version' }).click();
+  await expect(page.locator('#upload-status')).toContainText('Version 2 of approach.txt uploaded.');
+  await expect(page.locator('#documents')).toContainText('Version 2 (current)');
 });
 
 test('unauthenticated API access is rejected', async ({ request }) => {

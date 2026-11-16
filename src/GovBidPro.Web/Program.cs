@@ -85,6 +85,7 @@ services.AddExceptionHandler<ProblemDetailsExceptionHandler>();
 services.AddHealthChecks().AddDbContextCheck<GovBidProDbContext>("database", tags: ["ready"]);
 services.AddHostedService<RetentionPurgeHostedService>();
 services.AddHostedService<OpportunitySyncHostedService>();
+services.AddHostedService<DocumentRescanHostedService>();
 
 services.Configure<ForwardedHeadersOptions>(options =>
 {

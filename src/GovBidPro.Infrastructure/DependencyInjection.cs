@@ -58,7 +58,14 @@ public static class DependencyInjection
             .ValidateOnStart();
         services.AddOptions<DocumentUploadOptions>().Bind(configuration.GetSection(DocumentUploadOptions.SectionName))
             .Validate(o => o.MaxUploadBytes > 0 && o.MaxDocumentsPerTenant > 0, "Documents:MaxUploadBytes and MaxDocumentsPerTenant must be configured.")
-            .Validate(o => o.MalwareScanMode is "NotConfigured" || (o.MalwareScanMode is "DevelopmentBypass" && (environment.IsDevelopment() || environment.IsEnvironment(TestingEnvironment))), "Documents:MalwareScanMode DevelopmentBypass is only allowed in Development/Testing.")
+            .Validate(o => o.MalwareScanMode is "NotConfigured" or "ClamAv" || (o.MalwareScanMode is "DevelopmentBypass" && (environment.IsDevelopment() || environment.IsEnvironment(TestingEnvironment))), "Documents:MalwareScanMode must be NotConfigured, ClamAv or (Development/Testing only) DevelopmentBypass.")
+            .ValidateOnStart();
+        var scanMode = configuration[$"{DocumentUploadOptions.SectionName}:MalwareScanMode"];
+        services.AddOptions<ClamAvOptions>().Bind(configuration.GetSection(ClamAvOptions.SectionName))
+            .Validate(o => scanMode != "ClamAv" || ClamAvOptions.IsValid(o), "Documents:ClamAv:Host is required when Documents:MalwareScanMode is ClamAv.")
+            .ValidateOnStart();
+        services.AddOptions<DocumentRescanOptions>().Bind(configuration.GetSection(DocumentRescanOptions.SectionName))
+            .Validate(o => o.IntervalMinutes is >= 1 and <= 1440 && o.BatchSize is >= 1 and <= 500, "Documents:Rescan interval or batch size is out of range.")
             .ValidateOnStart();
         services.AddOptions<DataHandlingOptions>().Bind(configuration.GetSection(DataHandlingOptions.SectionName));
         services.AddOptions<AiOptions>().Bind(configuration.GetSection(AiOptions.SectionName))
@@ -97,10 +104,13 @@ public static class DependencyInjection
                 _ => throw new InvalidOperationException("Unknown Storage:Provider."),
             };
         });
-        services.AddSingleton<IMalwareScanner>(sp =>
-            sp.GetRequiredService<IOptions<DocumentUploadOptions>>().Value.MalwareScanMode == "DevelopmentBypass"
-                ? new DevelopmentBypassMalwareScanner()
-                : new NotConfiguredMalwareScanner());
+        services.AddSingleton<IMalwareScanner>(sp => sp.GetRequiredService<IOptions<DocumentUploadOptions>>().Value.MalwareScanMode switch
+        {
+            "DevelopmentBypass" => new DevelopmentBypassMalwareScanner(),
+            "ClamAv" => ActivatorUtilities.CreateInstance<ClamAvMalwareScanner>(sp),
+            _ => new NotConfiguredMalwareScanner(),
+        });
+        services.AddScoped<DocumentRescanService>();
 
         services.AddScoped<IAiProvider>(sp =>
         {
@@ -124,6 +134,7 @@ public static class DependencyInjection
             .ValidateOnStart();
         services.TryAddScoped<IProposalNotifier, NoOpProposalNotifier>();
         services.AddScoped<ProposalService>();
+        services.AddScoped<ProposalExportService>();
         services.AddScoped<OpportunityImportService>();
         services.AddScoped<SavedSearchService>();
         services.AddScoped<DocumentService>();

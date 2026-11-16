@@ -30,14 +30,21 @@ All endpoints are under `/api/v1`, return JSON (camelCase, enums as strings) and
 | DELETE | `/api/v1/proposals/{id}/requirements/{requirementId}` | ProposalWriter+ | 204. |
 | POST | `/api/v1/proposals/{id}/reviews` | ProposalWriter+ | Body `{ reviewerUserId, instructions? }`. Only while In review. The owner cannot review their own proposal unless configured (`review.self_review`). |
 | POST | `/api/v1/proposals/{id}/reviews/{reviewId}/decision` | the assigned reviewer (Reviewer+) | Body `{ outcome: Approved \| ChangesRequested, comment? }`. Changes requested needs a comment. 403 `review.not_assigned_reviewer` for anyone else. |
+| GET | `/api/v1/proposals/{id}/exports/compliance-matrix.csv` | tenant member | Compliance matrix as UTF-8 CSV. Cells that could run as spreadsheet formulas are neutralized. Audited, `no-store`. |
+| GET | `/api/v1/proposals/{id}/exports/outline.md` | tenant member | Working outline (sections, owners, requirements, compliance summary) as Markdown. Audited, `no-store`. |
 | GET | `/api/v1/saved-searches` | tenant member | The company's saved searches. |
 | GET | `/api/v1/saved-searches/{id}` | tenant member | 404 for other tenants' IDs. |
 | POST | `/api/v1/saved-searches` | ProposalWriter+ | Body `{ name, criteria, notificationFrequency }`. 201. |
 | PUT | `/api/v1/saved-searches/{id}` | ProposalWriter+ | Replace name, criteria and alert frequency. 404 across tenants. |
 | DELETE | `/api/v1/saved-searches/{id}` | ProposalWriter+ | 204; 404 across tenants. |
-| GET | `/api/v1/documents` | tenant member | The company's non-purged documents. |
-| POST | `/api/v1/documents` | ProposalWriter+ | Multipart: `file`, `classification`, `affirmPermittedToUpload`, `affirmNoProhibitedContent`. 201, or 403 with an `upload.*` reason code. |
+| GET | `/api/v1/documents?proposalId=&templates=` | tenant member | The company's non-purged documents with current version number, proposal link and template flag. Optional filters. |
+| POST | `/api/v1/documents` | ProposalWriter+ | Multipart: `file`, `classification`, `affirmPermittedToUpload`, `affirmNoProhibitedContent`, optional `proposalId`, `isTemplate`. 201, or 403 with an `upload.*` reason code. |
 | GET | `/api/v1/documents/{id}/content` | tenant member | Authorized stream, `Cache-Control: no-store`. 403 if quarantined, deleted or not scanned clean; 404 across tenants. |
+| GET | `/api/v1/documents/{id}/versions` | tenant member | Version history, newest first: number, file name, size, scan status, uploader, note, `isCurrent`, `isDownloadable`. |
+| POST | `/api/v1/documents/{id}/versions` | ProposalWriter+ | Multipart: `file`, both affirmations, optional `note`. Same screening as a first upload; classification is inherited; the new version becomes current. 201; 409 if the document is not active. |
+| GET | `/api/v1/documents/{id}/versions/{number}/content` | tenant member | Authorized stream of one version, `no-store`. 403 unless the document is active and that version scanned clean. |
+| PUT | `/api/v1/documents/{id}/placement` | ProposalWriter+ | Body `{ proposalId, isTemplate }`. Links to one of the company's proposals and/or marks a reusable template. 400 `document.proposal_not_found`. |
+| POST | `/api/v1/documents/{id}/copy` | ProposalWriter+ | Body `{ proposalId? }`. Copies the current version of a downloadable document (usually a template) into a new document. Checksum verified. 201. |
 | DELETE | `/api/v1/documents/{id}` | ProposalWriter+ | Soft delete with configured recovery window. |
 | POST | `/api/v1/documents/{id}/restore` | ProposalWriter+ | Restore within the recovery window. |
 | POST | `/api/v1/documents/{id}/quarantine` | CompanyAdmin | Blocks all access. |

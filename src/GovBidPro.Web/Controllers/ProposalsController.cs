@@ -62,6 +62,22 @@ public sealed class ProposalsController(ProposalService proposals) : ControllerB
     /// <summary>The assigned reviewer approves or requests changes.</summary>
     [HttpPost("{id:guid}/reviews/{reviewId:guid}/decision")]
     public Task<ProposalDetailDto> DecideReview(Guid id, Guid reviewId, DecideReviewCommand command, CancellationToken cancellationToken) => proposals.DecideReviewAsync(id, reviewId, command, cancellationToken);
+
+    /// <summary>Compliance matrix as CSV (formula-neutralized). Generated on request, never cached.</summary>
+    [HttpGet("{id:guid}/exports/compliance-matrix.csv")]
+    public async Task<IActionResult> ExportMatrix(Guid id, [FromServices] ProposalExportService exports, CancellationToken cancellationToken) =>
+        Download(await exports.ComplianceMatrixCsvAsync(id, cancellationToken));
+
+    /// <summary>Working outline (sections, owners, requirements) as Markdown.</summary>
+    [HttpGet("{id:guid}/exports/outline.md")]
+    public async Task<IActionResult> ExportOutline(Guid id, [FromServices] ProposalExportService exports, CancellationToken cancellationToken) =>
+        Download(await exports.OutlineMarkdownAsync(id, cancellationToken));
+
+    private FileContentResult Download(ExportFile file)
+    {
+        Response.Headers.CacheControl = "no-store";
+        return File(file.Content, file.ContentType, file.FileName);
+    }
 }
 
 [ApiController]

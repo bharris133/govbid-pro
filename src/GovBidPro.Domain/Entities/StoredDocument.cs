@@ -65,6 +65,7 @@ public sealed class StoredDocument : ITenantOwned
         ScanStatus = scanStatus;
         State = scanStatus == ScanStatus.Infected ? DocumentState.Quarantined : DocumentState.Active;
         CreatedAt = createdAt;
+        UpdatedAt = createdAt;
         CorrelationId = correlationId;
     }
 
@@ -111,6 +112,14 @@ public sealed class StoredDocument : ITenantOwned
     public string? QuarantineReason { get; private set; }
 
     public string CorrelationId { get; private set; }
+
+    /// <summary>Optional proposal this document belongs to (same tenant; checked by the application layer).</summary>
+    public Guid? ProposalId { get; private set; }
+
+    /// <summary>Reusable company template (boilerplate, capability statement) that can be copied into proposals.</summary>
+    public bool IsTemplate { get; private set; }
+
+    public DateTimeOffset UpdatedAt { get; private set; }
 
     /// <summary>True when the object may be streamed to an authorized user.</summary>
     public bool IsDownloadable => State == DocumentState.Active && ScanStatus is ScanStatus.Clean or ScanStatus.DevelopmentBypass;
@@ -167,6 +176,42 @@ public sealed class StoredDocument : ITenantOwned
     }
 
     public void SetLegalHold(bool hold) => LegalHold = hold;
+
+    /// <summary>Makes a newly stored version current. Earlier versions stay in storage until purge.</summary>
+    public void AddVersion(DocumentVersion version, DateTimeOffset at)
+    {
+        ArgumentNullException.ThrowIfNull(version);
+        if (State != DocumentState.Active)
+        {
+            throw new DomainException("Only active documents can get a new version.");
+        }
+
+        if (version.DocumentId != Id || version.TenantId != TenantId || version.Number != ObjectVersion + 1)
+        {
+            throw new DomainException("The version does not follow the current one.");
+        }
+
+        ObjectVersion = version.Number;
+        FileName = version.FileName;
+        ContentType = version.ContentType;
+        SizeBytes = version.SizeBytes;
+        Sha256 = version.Sha256;
+        StorageKey = version.StorageKey;
+        ScanStatus = version.ScanStatus;
+        UpdatedAt = at;
+    }
+
+    public void Place(Guid? proposalId, bool isTemplate, DateTimeOffset at)
+    {
+        if (State is DocumentState.Purged)
+        {
+            throw new DomainException("Purged documents cannot be changed.");
+        }
+
+        ProposalId = proposalId;
+        IsTemplate = isTemplate;
+        UpdatedAt = at;
+    }
 
     public void RecordScanResult(ScanStatus status)
     {

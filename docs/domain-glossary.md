@@ -30,3 +30,6 @@
 | **Compliance matrix** | The list of requirements extracted by users from the solicitation (reference such as L.4.2, text, source location, mandatory flag, response section, owner, evidence and status). |
 | **Compliance status** | Not started, In progress, Needs review, Compliant, or Exception. An Exception must explain itself in the evidence field. |
 | **Review round** | The reviews requested since the proposal last entered In review. Approval needs at least one approval, no pending reviews and no changes requested in the current round. |
+| **Document version** | One stored file of a document. Uploading a new version keeps earlier ones; each is screened and scanned on its own. The document shows its current (highest) version. |
+| **Template** | A company document marked for reuse (boilerplate, capability statement). Copying it into a proposal creates an independent document. |
+| **Rescan** | Background job that screens stored versions with no malware verdict (scanner was off or unreachable). Malware quarantines the whole document. |
