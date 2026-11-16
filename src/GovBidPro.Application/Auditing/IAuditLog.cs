@@ -41,6 +41,7 @@ public static class AuditActions
     public const string InvitationAccepted = "invitation.accepted";
     public const string MemberRoleChanged = "member.role_changed";
     public const string MemberRemoved = "member.removed";
+    public const string AuditExported = "audit.exported";
     public const string AccessDenied = "access.denied";
     public const string AiRequest = "ai.request";
     public const string OpportunityImport = "opportunity.import";

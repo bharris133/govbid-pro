@@ -20,5 +20,6 @@ Maps the handoff §14 matrix to what this repository contains today. "P0 deliver
 | Security & compliance considerations | requirements.md §10 | P0+ | Classification, audit, CSRF, secure cookies, rate limits, no certification claims | `docs/production-gates.md` |
 | Retention | handoff §9G.2 | P0 (configurable) | Configured, versioned policies; purge job; legal-hold flag | `RetentionTests` |
 | Cloud hosting | handoff D-01 | P0 skeleton | Bicep skeleton for Container Apps, PostgreSQL, Blob, Key Vault, managed identity | CI Bicep build |
-| Accessibility (Section 508 / WCAG 2.2 AA target) | requirements.md Technical §4 | P1.7 | Semantic forms, labels, skip link, live regions, focus styles; **no conformance claim** | — |
+| Accessibility (Section 508 / WCAG 2.2 AA target) | requirements.md Technical §4 | P1.7 | Semantic forms, labels, skip link, live regions, focus styles. Automated axe checks (WCAG A/AA rules) on the main pages run in CI. Automated checks find only part of the issues; **no conformance claim** until a manual evaluation with assistive technology | `accessibility.spec.ts` |
+| Hardening | handoff P1.7 | P1.7 | Structural tenant-filter guardrail, company audit export, restore drill script run in CI, performance baseline, runbook. Deployment pipeline, provider restore drill, external security test and tamper-evident audit storage remain gated | `HardeningTests`, `scripts/restore-drill.sh`, `docs/operations/performance-baseline.md` |
 | Subscriptions/entitlements | requirements.md Business §1 | P1 | Not started; no payment provider | — |

@@ -59,6 +59,15 @@ public sealed class ProposalApiTests(PostgresFixture postgres) : IAsyncLifetime
         using var members = JsonDocument.Parse(await client.GetStringAsync("/api/v1/company/members"));
         Assert.Equal(1, members.RootElement.GetArrayLength());
 
+        // P1.7: the company admin can download the company's own audit trail; it is never cached.
+        var auditExport = await client.GetAsync("/api/v1/company/audit/export.csv");
+        Assert.Equal(HttpStatusCode.OK, auditExport.StatusCode);
+        Assert.Equal("text/csv", auditExport.Content.Headers.ContentType?.MediaType);
+        Assert.True(auditExport.Headers.CacheControl?.NoStore);
+        var auditCsv = await auditExport.Content.ReadAsStringAsync();
+        Assert.Contains("proposal.created", auditCsv, StringComparison.Ordinal);
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.GetAsync("/api/v1/company/audit/export.csv?from=2020-01-01T00:00:00Z&to=2026-01-01T00:00:00Z")).StatusCode);
+
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/Proposals")).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"/Proposals/Detail?id={id}")).StatusCode);
     }

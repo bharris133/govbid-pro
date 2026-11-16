@@ -1,3 +1,4 @@
+using GovBidPro.Application.Auditing;
 using GovBidPro.Application.Companies;
 using GovBidPro.Application.Proposals;
 using GovBidPro.Web.Hosting;
@@ -98,5 +99,20 @@ public sealed class MembersController(MemberService members) : ControllerBase
     {
         await members.RemoveAsync(userId, cancellationToken);
         return NoContent();
+    }
+}
+
+[ApiController]
+[Route("api/v1/company/audit")]
+[Authorize(Policy = Policies.TenantMember)]
+public sealed class CompanyAuditController(AuditExportService exports) : ControllerBase
+{
+    /// <summary>The company's own audit trail as CSV. Company admins only; defaults to the last 90 days.</summary>
+    [HttpGet("export.csv")]
+    public async Task<IActionResult> Export([FromQuery] DateTimeOffset? from, [FromQuery] DateTimeOffset? to, CancellationToken cancellationToken)
+    {
+        var file = await exports.ExportCsvAsync(from, to, cancellationToken);
+        Response.Headers.CacheControl = "no-store";
+        return File(file.Content, file.ContentType, file.FileName);
     }
 }

@@ -104,7 +104,13 @@ export async function renderMembers(target: HTMLElement): Promise<void> {
         }
       })();
     });
-    children.push(form, linkBox, invitationsBox);
+    const auditLink = el('a', { text: 'Download the audit log (CSV, last 90 days)', attrs: { href: '/api/v1/company/audit/export.csv', download: '' } });
+    const auditBox = el('div', { attrs: { id: 'audit-export' } }, [
+      el('h3', { text: 'Audit log' }),
+      el('p', { className: 'muted', text: 'A record of changes, denied attempts, exports and deletions in your company. Each download is itself recorded.' }),
+      el('p', {}, [auditLink]),
+    ]);
+    children.push(form, linkBox, invitationsBox, auditBox);
   }
   children.push(status);
   target.replaceChildren(el('section', { attrs: { 'aria-labelledby': 'members-heading' } }, children));

@@ -20,6 +20,7 @@ All endpoints are under `/api/v1`, return JSON (camelCase, enums as strings) and
 | GET | `/api/v1/company/members` | tenant member | Active members (id, email, role) for assignment and reviewer pickers. |
 | PUT | `/api/v1/company/members/{userId}/role` | CompanyAdmin (configurable) | Body `{ role }`. Cannot grant above your own role or demote the last company admin (409). |
 | DELETE | `/api/v1/company/members/{userId}` | CompanyAdmin (configurable) | Removes access; pending reviews assigned to the person are superseded. 409 for the last company admin. 204. |
+| GET | `/api/v1/company/audit/export.csv?from=&to=` | CompanyAdmin | The company's own audit trail as UTF-8 CSV, oldest first. Defaults to the last 90 days; at most 366 days and 50,000 rows per file. Never includes other companies' or platform events. Formula-neutralized, audited (`audit.exported`), `no-store`. |
 | GET | `/api/v1/company/invitations` | CompanyAdmin (configurable) | Invitations with state (`Pending`, `Accepted`, `Revoked`, `Expired`). Never includes the secret. |
 | POST | `/api/v1/company/invitations` | CompanyAdmin (configurable) | Body `{ email, role }`. Returns the invitation, `acceptPath` (the one-time link, shown once) and `emailSent`. Replaces an earlier pending invitation for the same address. 201, `no-store`. |
 | DELETE | `/api/v1/company/invitations/{id}` | CompanyAdmin (configurable) | Revokes a pending invitation. 204; 409 if not pending. |

@@ -154,6 +154,7 @@ public static class DependencyInjection
         services.AddScoped<AssessmentService>();
         services.AddScoped<IUserDirectory, UserDirectory>();
         services.AddScoped<MemberService>();
+        services.AddScoped<AuditExportService>();
         services.AddOptions<ProposalOptions>().Bind(configuration.GetSection(ProposalOptions.SectionName))
             .Validate(ProposalOptions.IsValid, "Proposals settings are invalid: StageLabels and SectionTemplates keys must be known statuses/response types with short non-empty values.")
             .ValidateOnStart();

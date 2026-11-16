@@ -69,9 +69,20 @@ internal sealed class LogEmailSender(ILogger<LogEmailSender> logger) : IEmailSen
     public Task SendAsync(EmailMessage message, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(message);
-        logger.LogInformation("DEV EMAIL (not sent) to {To}: {Subject}\n{Body}", message.To, message.Subject, message.TextBody);
+        // The recipient is masked and everything is flattened to one line, so text a user typed (an invited
+        // address, a proposal title) can neither forge log entries nor put a full address in the log.
+        logger.LogInformation("DEV EMAIL (not sent) to {To}: {Subject} | {Body}", MaskAddress(message.To), SingleLine(message.Subject), SingleLine(message.TextBody));
         return Task.CompletedTask;
     }
+
+    internal static string MaskAddress(string address)
+    {
+        var at = address.LastIndexOf('@');
+        return at <= 0 ? "***" : SingleLine(string.Concat(address.AsSpan(0, 1), "***", address.AsSpan(at)));
+    }
+
+    internal static string SingleLine(string value) =>
+        new string(value.Replace("\r", string.Empty, StringComparison.Ordinal).Replace("\n", " | ", StringComparison.Ordinal).Where(c => !char.IsControl(c)).ToArray());
 }
 
 /// <summary>
