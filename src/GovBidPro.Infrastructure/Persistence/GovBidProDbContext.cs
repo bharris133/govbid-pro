@@ -35,6 +35,16 @@ public sealed class GovBidProDbContext(DbContextOptions<GovBidProDbContext> opti
 
     public DbSet<OpportunityAssessment> OpportunityAssessments => Set<OpportunityAssessment>();
 
+    public DbSet<Proposal> Proposals => Set<Proposal>();
+
+    public DbSet<ProposalEvent> ProposalEvents => Set<ProposalEvent>();
+
+    public DbSet<ProposalSection> ProposalSections => Set<ProposalSection>();
+
+    public DbSet<ProposalRequirement> ProposalRequirements => Set<ProposalRequirement>();
+
+    public DbSet<ProposalReview> ProposalReviews => Set<ProposalReview>();
+
     public DbSet<RetentionPolicy> RetentionPolicies => Set<RetentionPolicy>();
 
     public DbSet<RetentionAction> RetentionActions => Set<RetentionAction>();
@@ -80,6 +90,11 @@ public sealed class GovBidProDbContext(DbContextOptions<GovBidProDbContext> opti
         builder.Entity<RetentionAction>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
         builder.Entity<CompanyProfile>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
         builder.Entity<OpportunityAssessment>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<Proposal>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<ProposalEvent>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<ProposalSection>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<ProposalRequirement>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
+        builder.Entity<ProposalReview>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
         builder.Entity<AiRequestRecord>().HasQueryFilter(e => TenantFilterBypassed || e.TenantId == TenantFilterId);
     }
 }

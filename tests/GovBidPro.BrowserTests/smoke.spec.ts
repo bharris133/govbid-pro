@@ -70,6 +70,23 @@ test('company user can search fixture opportunities and save a search', async ({
   await expect(page.locator('#assessment-history')).toContainText('Go · score');
   await expect(page.locator('#assessment-history')).toContainText('Matches our facilities experience.');
 
+  // P1.4: start a response, add a compliance requirement and move the proposal to work.
+  await page.getByRole('button', { name: 'Start a response' }).click();
+  await expect(page).toHaveURL(/Proposals\/Detail/);
+  await expect(page.locator('html')).toHaveAttribute('data-client-ready', 'true');
+  await expect(page.locator('#proposal-status')).toHaveText('');
+  await expect(page.locator('#sections-table')).toBeVisible();
+  await page.getByLabel('Reference (e.g. L.4.2)').fill('L.4.2');
+  await page.getByLabel('Requirement text').fill('The offeror shall describe its staffing plan.');
+  await page.getByRole('button', { name: 'Add requirement' }).click();
+  await expect(page.locator('#compliance-matrix')).toContainText('L.4.2');
+  await expect(page.locator('#compliance-summary')).toContainText('1');
+  await page.locator('#status-actions').getByRole('button', { name: 'Move to In progress' }).click();
+  await expect(page.locator('#proposal-history')).toContainText('In progress');
+  await page.goto('/Proposals');
+  await expect(page.locator('html')).toHaveAttribute('data-client-ready', 'true');
+  await expect(page.locator('#proposals')).toContainText('In progress');
+
   await page.goto('/Documents');
   await expect(page.locator('html')).toHaveAttribute('data-client-ready', 'true');
   await page.getByLabel('File (PDF, DOCX, XLSX, TXT, CSV, PNG or JPG)').setInputFiles({

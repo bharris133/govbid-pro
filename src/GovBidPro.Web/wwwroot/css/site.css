@@ -94,3 +94,8 @@ textarea { font: inherit; padding: .4rem .5rem; border: 1px solid var(--border);
 @media (max-width: 40rem) { .detail-row { grid-template-columns: 1fr; } }
 caption { text-align: left; color: var(--muted); padding: .25rem 0; }
 .score strong { font-size: 1.75rem; }
+.stages { display: flex; flex-wrap: wrap; gap: .25rem; list-style: none; padding: 0; margin: .5rem 0 1rem; }
+.stages li { border: 1px solid var(--border); border-radius: 999px; padding: .1rem .7rem; font-size: .875rem; color: var(--muted); }
+.stages li.current { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 600; }
+tr.open-mandatory th { border-left: 4px solid var(--warn-border); }
+#proposal-warnings { padding-left: 2rem; }

@@ -543,6 +543,301 @@ namespace GovBidPro.Infrastructure.Persistence.Migrations
                     b.ToTable("opportunity_revisions", (string)null);
                 });
 
+            modelBuilder.Entity("GovBidPro.Domain.Entities.Proposal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<DateTimeOffset?>("DueAtSnapshot")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DueTextSnapshot")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("OpportunityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("OpportunityRevisionNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("OwnerUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<string>("ResponseType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("SubmissionEvidence")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OpportunityId");
+
+                    b.HasIndex("TenantId", "OpportunityId");
+
+                    b.HasIndex("TenantId", "Status");
+
+                    b.ToTable("proposals", (string)null);
+                });
+
+            modelBuilder.Entity("GovBidPro.Domain.Entities.ProposalEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ActorUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<string>("From")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ProposalId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("To")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProposalId");
+
+                    b.HasIndex("TenantId", "ProposalId", "OccurredAt");
+
+                    b.ToTable("proposal_events", (string)null);
+                });
+
+            modelBuilder.Entity("GovBidPro.Domain.Entities.ProposalRequirement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AssigneeUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Evidence")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<bool>("Mandatory")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("ProposalId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("ResponseLocation")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid?>("SectionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SourceLocator")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProposalId");
+
+                    b.HasIndex("SectionId");
+
+                    b.HasIndex("TenantId", "AssigneeUserId");
+
+                    b.HasIndex("TenantId", "ProposalId");
+
+                    b.ToTable("proposal_requirements", (string)null);
+                });
+
+            modelBuilder.Entity("GovBidPro.Domain.Entities.ProposalReview", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTimeOffset?>("DecidedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Instructions")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("Outcome")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<Guid>("ProposalId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("RequestedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RequestedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<string>("ReviewerUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProposalId");
+
+                    b.HasIndex("TenantId", "ProposalId");
+
+                    b.HasIndex("TenantId", "ReviewerUserId", "Outcome");
+
+                    b.ToTable("proposal_reviews", (string)null);
+                });
+
+            modelBuilder.Entity("GovBidPro.Domain.Entities.ProposalSection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AssigneeUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<bool>("IsComplete")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("ProposalId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProposalId");
+
+                    b.HasIndex("TenantId", "ProposalId", "Order");
+
+                    b.ToTable("proposal_sections", (string)null);
+                });
+
             modelBuilder.Entity("GovBidPro.Domain.Entities.RetentionAction", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1128,6 +1423,62 @@ namespace GovBidPro.Infrastructure.Persistence.Migrations
                         .WithMany("Revisions")
                         .HasForeignKey("OpportunityId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("GovBidPro.Domain.Entities.Proposal", b =>
+                {
+                    b.HasOne("GovBidPro.Domain.Entities.Opportunity", null)
+                        .WithMany()
+                        .HasForeignKey("OpportunityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GovBidPro.Domain.Entities.Company", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("GovBidPro.Domain.Entities.ProposalEvent", b =>
+                {
+                    b.HasOne("GovBidPro.Domain.Entities.Proposal", null)
+                        .WithMany()
+                        .HasForeignKey("ProposalId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("GovBidPro.Domain.Entities.ProposalRequirement", b =>
+                {
+                    b.HasOne("GovBidPro.Domain.Entities.Proposal", null)
+                        .WithMany()
+                        .HasForeignKey("ProposalId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GovBidPro.Domain.Entities.ProposalSection", null)
+                        .WithMany()
+                        .HasForeignKey("SectionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("GovBidPro.Domain.Entities.ProposalReview", b =>
+                {
+                    b.HasOne("GovBidPro.Domain.Entities.Proposal", null)
+                        .WithMany()
+                        .HasForeignKey("ProposalId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("GovBidPro.Domain.Entities.ProposalSection", b =>
+                {
+                    b.HasOne("GovBidPro.Domain.Entities.Proposal", null)
+                        .WithMany()
+                        .HasForeignKey("ProposalId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

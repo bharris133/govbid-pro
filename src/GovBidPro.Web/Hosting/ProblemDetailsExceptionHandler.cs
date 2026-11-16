@@ -17,6 +17,7 @@ internal sealed class ProblemDetailsExceptionHandler(IProblemDetailsService prob
             PolicyDeniedException denied => (StatusCodes.Status403Forbidden, "Forbidden", denied.ReasonCode),
             RequestValidationException invalid => (StatusCodes.Status400BadRequest, invalid.Message, invalid.ReasonCode),
             ConflictException conflict => (StatusCodes.Status409Conflict, conflict.Message, "conflict"),
+            Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "The record was changed by someone else. Reload and try again.", "conflict.concurrency"),
             DomainException domain => (StatusCodes.Status400BadRequest, domain.Message, "domain.invalid"),
             AiProviderUnavailableException => (StatusCodes.Status503ServiceUnavailable, "AI provider unavailable", "ai.provider_unavailable"),
             _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred", "server.error"),

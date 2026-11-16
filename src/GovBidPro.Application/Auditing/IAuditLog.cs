@@ -16,6 +16,13 @@ public static class AuditActions
     public const string SavedSearchDeleted = "saved_search.deleted";
     public const string CompanyProfileUpdated = "company_profile.updated";
     public const string AssessmentRecorded = "assessment.recorded";
+    public const string ProposalCreated = "proposal.created";
+    public const string ProposalUpdated = "proposal.updated";
+    public const string ProposalStatusChanged = "proposal.status_changed";
+    public const string ProposalSectionChanged = "proposal.section_changed";
+    public const string RequirementChanged = "proposal.requirement_changed";
+    public const string ReviewRequested = "proposal.review_requested";
+    public const string ReviewDecided = "proposal.review_decided";
     public const string DocumentUpload = "document.upload";
     public const string DocumentDownload = "document.download";
     public const string DocumentDelete = "document.delete";

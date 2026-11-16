@@ -236,3 +236,128 @@ export interface ProblemDetails {
   reasonCode?: string;
   traceId?: string;
 }
+
+export type ProposalStatus =
+  | 'Draft'
+  | 'InProgress'
+  | 'InReview'
+  | 'Approved'
+  | 'ReadyForSubmission'
+  | 'SubmittedExternally'
+  | 'Won'
+  | 'Lost'
+  | 'Cancelled';
+export type ComplianceStatus = 'NotStarted' | 'InProgress' | 'NeedsReview' | 'Compliant' | 'Exception';
+export type ReviewOutcome = 'Requested' | 'Approved' | 'ChangesRequested' | 'Superseded';
+
+export interface Member {
+  userId: string;
+  email: string;
+  role: CompanyRole;
+  status: string;
+  joinedAt: string;
+}
+
+export interface ComplianceSummary {
+  total: number;
+  mandatory: number;
+  mandatoryOpen: number;
+  compliant: number;
+  exceptions: number;
+  needsReview: number;
+}
+
+export interface ProposalSummary {
+  id: string;
+  title: string;
+  opportunityId: string;
+  opportunityTitle: string;
+  responseType: ResponseType;
+  status: ProposalStatus;
+  statusLabel: string;
+  owner: string;
+  dueAt: string | null;
+  compliance: ComplianceSummary;
+  updatedAt: string;
+}
+
+export interface ProposalSection {
+  id: string;
+  order: number;
+  title: string;
+  assigneeUserId: string | null;
+  assignee: string | null;
+  isComplete: boolean;
+}
+
+export interface Requirement {
+  id: string;
+  reference: string;
+  text: string;
+  sourceLocator: string | null;
+  category: string | null;
+  mandatory: boolean;
+  sectionId: string | null;
+  sectionTitle: string | null;
+  responseLocation: string | null;
+  assigneeUserId: string | null;
+  assignee: string | null;
+  evidence: string | null;
+  status: ComplianceStatus;
+  updatedAt: string;
+}
+
+export interface RequirementInput {
+  reference: string;
+  text: string;
+  sourceLocator: string | null;
+  category: string | null;
+  mandatory: boolean;
+  sectionId: string | null;
+  responseLocation: string | null;
+  assigneeUserId: string | null;
+  evidence: string | null;
+  status: ComplianceStatus;
+}
+
+export interface Review {
+  id: string;
+  reviewerUserId: string;
+  reviewer: string;
+  requestedBy: string;
+  instructions: string | null;
+  requestedAt: string;
+  outcome: ReviewOutcome;
+  comment: string | null;
+  decidedAt: string | null;
+  currentRound: boolean;
+}
+
+export interface ProposalDetail {
+  id: string;
+  title: string;
+  responseType: ResponseType;
+  status: ProposalStatus;
+  statusLabel: string;
+  ownerUserId: string;
+  owner: string;
+  opportunityId: string;
+  opportunityTitle: string;
+  solicitationNumber: string | null;
+  opportunityIsLive: boolean;
+  opportunitySourceUrl: string | null;
+  submissionInstructions: string | null;
+  dueAt: string | null;
+  dueText: string | null;
+  submissionEvidence: string | null;
+  createdAt: string;
+  updatedAt: string;
+  warnings: string[];
+  stages: { status: ProposalStatus; label: string }[];
+  nextStages: { status: ProposalStatus; label: string; allowed: boolean; blockedReason: string | null }[];
+  compliance: ComplianceSummary;
+  sections: ProposalSection[];
+  requirements: Requirement[];
+  reviews: Review[];
+  history: { from: ProposalStatus; to: ProposalStatus; fromLabel: string; toLabel: string; actor: string; note: string | null; occurredAt: string }[];
+}

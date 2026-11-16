@@ -25,3 +25,8 @@
 | **Company fit profile** | What a company states about itself for scoring: NAICS codes, set-aside programs it says it qualifies for, capability keywords, preferred states and agencies, minimum days to respond. Self-declared; never verified by GovBid Pro. |
 | **Fit score** | Rule-based 0-100 screening score (`fit-v1`): NAICS 30, set-aside 20, keywords 20, place 10, agency 10, time 10. Criteria without data are left out. Not a win probability. |
 | **Assessment** | Immutable company-specific record of a fit score, its criteria and a Go/No-go/Watch decision with author, time, rationale and the notice revision scored. The sequence of assessments is the audit trail. |
+| **Proposal** | A company's response to one opportunity. Snapshots the notice revision and deadline when started. One open proposal per opportunity per company. |
+| **Stage** | Proposal status: Draft, In progress, In review, Approved, Ready for submission, Submitted (outside GovBid Pro), Won, Lost, Cancelled. The transitions are fixed; the display names are configurable (`Proposals:StageLabels`). |
+| **Compliance matrix** | The list of requirements extracted by users from the solicitation (reference such as L.4.2, text, source location, mandatory flag, response section, owner, evidence and status). |
+| **Compliance status** | Not started, In progress, Needs review, Compliant, or Exception. An Exception must explain itself in the evidence field. |
+| **Review round** | The reviews requested since the proposal last entered In review. Approval needs at least one approval, no pending reviews and no changes requested in the current round. |

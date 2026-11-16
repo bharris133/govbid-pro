@@ -2,6 +2,7 @@ import { getOpportunity } from '../api/opportunities.js';
 import { describeError, el, formatDate, requireElement } from '../components/dom.js';
 import { noticeTypeLabels, responseTypeLabels } from '../labels.js';
 import type { OpportunityDetail } from '../models/api.js';
+import { createProposal, listProposals } from '../api/proposals.js';
 import { renderAssessmentPanel } from './assessmentPanel.js';
 
 function row(label: string, value: string | Node): HTMLElement {
@@ -64,6 +65,27 @@ export function renderOpportunity(target: HTMLElement, o: OpportunityDetail): vo
   );
 }
 
+async function renderResponseAction(target: HTMLElement, opportunityId: string): Promise<void> {
+  const existing = (await listProposals()).find((p) => p.opportunityId === opportunityId);
+  if (existing) {
+    target.replaceChildren(el('p', { className: 'panel' }, ['Your company is responding: ', el('a', { text: existing.title, attrs: { href: `/Proposals/Detail?id=${encodeURIComponent(existing.id)}` } }), ` (${existing.statusLabel}).`]));
+    return;
+  }
+  const start = el('button', { text: 'Start a response', attrs: { type: 'button' } });
+  const status = el('span', { attrs: { role: 'status', 'aria-live': 'polite' } });
+  start.addEventListener('click', () => {
+    void (async () => {
+      try {
+        const created = await createProposal(opportunityId);
+        window.location.assign(`/Proposals/Detail?id=${encodeURIComponent(created.id)}`);
+      } catch (error) {
+        status.textContent = ` ${describeError(error)}`;
+      }
+    })();
+  });
+  target.replaceChildren(el('p', { className: 'panel' }, [start, status]));
+}
+
 export async function initOpportunityDetailPage(): Promise<void> {
   const status = requireElement('#detail-status', HTMLElement);
   const target = requireElement('#opportunity-detail', HTMLElement);
@@ -73,7 +95,11 @@ export async function initOpportunityDetailPage(): Promise<void> {
     renderOpportunity(target, opportunity);
     document.title = `${opportunity.title} · GovBid Pro`;
     status.textContent = '';
-    await renderAssessmentPanel(requireElement('#opportunity-extra', HTMLElement), opportunity.id, opportunity.revisionNumber);
+    const extra = requireElement('#opportunity-extra', HTMLElement);
+    const response = el('div', { attrs: { id: 'response-action' } });
+    const assessment = el('div');
+    extra.replaceChildren(response, assessment);
+    await Promise.all([renderResponseAction(response, opportunity.id), renderAssessmentPanel(assessment, opportunity.id, opportunity.revisionNumber)]);
   } catch (error) {
     status.textContent = (error as { status?: number }).status === 404 ? 'This opportunity was not found.' : describeError(error);
     status.className = 'error';

@@ -1,0 +1,10 @@
+@page
+@model GovBidPro.Web.Pages.Proposals.IndexModel
+@{
+    ViewData["Title"] = "Proposals";
+    ViewData["Page"] = "proposals";
+}
+<h1>Proposals</h1>
+<p class="muted">GovBid Pro helps your team prepare responses. It never submits anything to an agency.</p>
+<label class="check"><input type="checkbox" id="include-closed" /> Show won, lost and cancelled proposals</label>
+<div id="proposals" aria-live="polite"><p>Loading…</p></div>

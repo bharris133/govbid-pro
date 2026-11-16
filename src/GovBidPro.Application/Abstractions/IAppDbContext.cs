@@ -26,6 +26,16 @@ public interface IAppDbContext
 
     DbSet<OpportunityAssessment> OpportunityAssessments { get; }
 
+    DbSet<Proposal> Proposals { get; }
+
+    DbSet<ProposalEvent> ProposalEvents { get; }
+
+    DbSet<ProposalSection> ProposalSections { get; }
+
+    DbSet<ProposalRequirement> ProposalRequirements { get; }
+
+    DbSet<ProposalReview> ProposalReviews { get; }
+
     DbSet<RetentionPolicy> RetentionPolicies { get; }
 
     DbSet<RetentionAction> RetentionActions { get; }

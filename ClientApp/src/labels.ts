@@ -1,4 +1,4 @@
-import type { DataClassification, FitOutcome, GoNoGoDecision, ResponseType, SetAsideCategory, SourceNoticeType } from './models/api.js';
+import type { ComplianceStatus, DataClassification, FitOutcome, GoNoGoDecision, ResponseType, SetAsideCategory, SourceNoticeType } from './models/api.js';
 
 export const responseTypeLabels: Record<ResponseType, string> = {
   Undetermined: 'Undetermined',
@@ -59,4 +59,21 @@ export const setAsideLabels: Record<SetAsideCategory, string> = {
   Wosb: 'Women-owned small business (WOSB)',
   Edwosb: 'Economically disadvantaged WOSB (EDWOSB)',
   IndianEconomicEnterprise: 'Indian economic enterprise',
+};
+
+export const complianceLabels: Record<ComplianceStatus, string> = {
+  NotStarted: 'Not started',
+  InProgress: 'In progress',
+  NeedsReview: 'Needs review',
+  Compliant: 'Compliant',
+  Exception: 'Exception',
+};
+
+export const blockedReasonLabels: Record<string, string> = {
+  'role.insufficient': 'Needs a team manager or company administrator',
+  'proposal.review_required': 'Needs an approved review',
+  'proposal.review_pending': 'Waiting for reviewers',
+  'proposal.review_changes_requested': 'A reviewer requested changes',
+  'proposal.mandatory_requirements_open': 'Mandatory requirements are still open',
+  'proposal.transition_not_allowed': 'Not allowed from this status',
 };

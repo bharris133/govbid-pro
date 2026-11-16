@@ -3,6 +3,7 @@ using GovBidPro.Application.Ai;
 using GovBidPro.Application.Assessments;
 using GovBidPro.Application.Documents;
 using GovBidPro.Application.Opportunities;
+using GovBidPro.Application.Proposals;
 using GovBidPro.Application.Retention;
 using GovBidPro.Application.SavedSearches;
 using GovBidPro.Application.Security;
@@ -140,6 +141,11 @@ public sealed class TestWorld(string connectionString, MutableTimeProvider clock
 
     public AssessmentService Assessments(GovBidProDbContext db, ITenantContext tenant, RecordingAuditLog? audit = null) =>
         new(db, tenant, audit ?? new RecordingAuditLog(), new DbUserDirectory(db), Options.Create(Assessment), Clock);
+
+    public ProposalOptions Proposal { get; set; } = new();
+
+    public ProposalService Proposals(GovBidProDbContext db, ITenantContext tenant, RecordingAuditLog? audit = null, IProposalNotifier? notifier = null) =>
+        new(db, tenant, audit ?? new RecordingAuditLog(), new DbUserDirectory(db), notifier ?? new NoOpProposalNotifier(), Options.Create(Proposal), Clock);
 
     public DocumentService Documents(GovBidProDbContext db, ITenantContext tenant, RecordingAuditLog? audit = null) =>
         new(db, tenant, audit ?? new RecordingAuditLog(), Storage, Scanner, new DocumentDataPolicyEvaluator(db, Options.Create(DataHandling)),

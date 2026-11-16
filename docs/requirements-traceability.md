@@ -13,7 +13,7 @@ Maps the handoff §14 matrix to what this repository contains today. "P0 deliver
 | Live SAM.gov sync | handoff §6, P1.2 | P1.2 | Official v2 API adapter, bounded scheduled sync, admin endpoints; off by default and **not verified live** | `SamGovSourceTests`, `OpportunityImportTests` |
 | Alerts | requirements.md §2 | P1.6 | Frequency stored only | — |
 | Fit scoring, Go/No-go | requirements.md §3 | P1.3 | Company fit profile, explainable rule-based score, role-controlled Go/No-go/Watch with rationale, append-only history, amended-since flag, dashboard counts | `FitScorerTests`, `AssessmentTests`, `AssessmentApiTests`, smoke test |
-| Proposal lifecycle, compliance matrix | requirements.md §4–5; handoff §7 | P1.4 | Lifecycle state machine and compliance statuses in Domain | `ProposalLifecycleTests` |
+| Proposal lifecycle, compliance matrix | requirements.md §4–5; handoff §7 | P1.4 | Start a response from an opportunity, default sections by response type, compliance matrix with owners and evidence, assigned reviews with four-eyes default, gated lifecycle (review approval, mandatory items resolved, submission evidence), status history, configurable stage names | `ProposalDomainTests`, `ProposalLifecycleTests`, `ProposalTests`, `ProposalApiTests`, smoke test |
 | Documents | requirements.md §4; handoff §9B | P1.5 / P0-SEC | Secure upload, classification, marker rejection, private storage, authorized download, soft delete/restore, quarantine | `DocumentSecurityTests`, `ApiSecurityTests` |
 | AI assistance | requirements.md §6 | P2/P3 opt-in | Provider abstraction, policy gate, disabled by default; no endpoint | `AiGovernanceTests` |
 | Knowledge, analytics, integrations | requirements.md §7–9 | P2 | Not started | — |

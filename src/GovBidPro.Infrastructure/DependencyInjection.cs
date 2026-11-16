@@ -6,6 +6,7 @@ using GovBidPro.Application.Companies;
 using GovBidPro.Application.Dashboard;
 using GovBidPro.Application.Documents;
 using GovBidPro.Application.Opportunities;
+using GovBidPro.Application.Proposals;
 using GovBidPro.Application.Retention;
 using GovBidPro.Application.SavedSearches;
 using GovBidPro.Application.Security;
@@ -20,6 +21,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
@@ -116,6 +118,12 @@ public static class DependencyInjection
         services.AddOptions<AssessmentOptions>().Bind(configuration.GetSection(AssessmentOptions.SectionName));
         services.AddScoped<AssessmentService>();
         services.AddScoped<IUserDirectory, UserDirectory>();
+        services.AddScoped<MemberService>();
+        services.AddOptions<ProposalOptions>().Bind(configuration.GetSection(ProposalOptions.SectionName))
+            .Validate(ProposalOptions.IsValid, "Proposals settings are invalid: StageLabels and SectionTemplates keys must be known statuses/response types with short non-empty values.")
+            .ValidateOnStart();
+        services.TryAddScoped<IProposalNotifier, NoOpProposalNotifier>();
+        services.AddScoped<ProposalService>();
         services.AddScoped<OpportunityImportService>();
         services.AddScoped<SavedSearchService>();
         services.AddScoped<DocumentService>();
