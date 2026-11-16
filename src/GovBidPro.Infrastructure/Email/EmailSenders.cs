@@ -71,7 +71,7 @@ internal sealed class LogEmailSender(ILogger<LogEmailSender> logger) : IEmailSen
         ArgumentNullException.ThrowIfNull(message);
         // The recipient is masked and everything is flattened to one line, so text a user typed (an invited
         // address, a proposal title) can neither forge log entries nor put a full address in the log.
-        logger.LogInformation("DEV EMAIL (not sent) to {To}: {Subject} | {Body}", MaskAddress(message.To), SingleLine(message.Subject), SingleLine(message.TextBody));
+        logger.LogInformation("DEV EMAIL (not sent) to {To}: {Subject} | {Body}", MaskAddress(message.To), Redact(message.Subject), Redact(message.TextBody));
         return Task.CompletedTask;
     }
 
@@ -80,6 +80,10 @@ internal sealed class LogEmailSender(ILogger<LogEmailSender> logger) : IEmailSen
         var at = address.LastIndexOf('@');
         return at <= 0 ? "***" : SingleLine(string.Concat(address.AsSpan(0, 1), "***", address.AsSpan(at)));
     }
+
+    /// <summary>One line, with any email address inside the text masked (links are kept so a developer can follow them).</summary>
+    internal static string Redact(string value) =>
+        string.Join(' ', SingleLine(value).Split(' ').Select(word => word.Contains('@', StringComparison.Ordinal) && !word.Contains("://", StringComparison.Ordinal) ? "[address]" : word));
 
     internal static string SingleLine(string value) =>
         new string(value.Replace("\r", string.Empty, StringComparison.Ordinal).Replace("\n", " | ", StringComparison.Ordinal).Where(c => !char.IsControl(c)).ToArray());
