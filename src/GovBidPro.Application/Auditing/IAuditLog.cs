@@ -34,6 +34,13 @@ public static class AuditActions
     public const string DocumentCopied = "document.copied";
     public const string DocumentScanned = "document.scanned";
     public const string ExportGenerated = "export.generated";
+    public const string TaskChanged = "task.changed";
+    public const string CommentChanged = "comment.changed";
+    public const string InvitationCreated = "invitation.created";
+    public const string InvitationRevoked = "invitation.revoked";
+    public const string InvitationAccepted = "invitation.accepted";
+    public const string MemberRoleChanged = "member.role_changed";
+    public const string MemberRemoved = "member.removed";
     public const string AccessDenied = "access.denied";
     public const string AiRequest = "ai.request";
     public const string OpportunityImport = "opportunity.import";

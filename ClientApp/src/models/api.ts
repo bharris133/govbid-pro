@@ -378,3 +378,79 @@ export interface ProposalDetail {
   reviews: Review[];
   history: { from: ProposalStatus; to: ProposalStatus; fromLabel: string; toLabel: string; actor: string; note: string | null; occurredAt: string }[];
 }
+
+export interface NotificationItem {
+  id: string;
+  kind: string;
+  title: string;
+  body: string | null;
+  link: string | null;
+  createdAt: string;
+  isRead: boolean;
+}
+
+export interface NotificationList {
+  unread: number;
+  items: NotificationItem[];
+}
+
+export interface NotificationPreferences {
+  emailNotifications: boolean;
+  emailAvailable: boolean;
+}
+
+export type WorkTaskStatus = 'Open' | 'InProgress' | 'Done' | 'Cancelled';
+
+export interface WorkTask {
+  id: string;
+  title: string;
+  description: string | null;
+  assigneeUserId: string | null;
+  assignee: string | null;
+  dueOn: string | null;
+  status: WorkTaskStatus;
+  proposalId: string | null;
+  proposalTitle: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  overdue: boolean;
+}
+
+export interface TaskInput {
+  title: string;
+  description: string | null;
+  assigneeUserId: string | null;
+  dueOn: string | null;
+  proposalId: string | null;
+}
+
+export interface ProposalComment {
+  id: string;
+  requirementId: string | null;
+  requirementReference: string | null;
+  authorUserId: string;
+  author: string;
+  body: string;
+  createdAt: string;
+  deleted: boolean;
+  canDelete: boolean;
+}
+
+export type InvitationState = 'Pending' | 'Accepted' | 'Revoked' | 'Expired';
+
+export interface Invitation {
+  id: string;
+  email: string;
+  role: CompanyRole;
+  state: InvitationState;
+  invitedBy: string;
+  createdAt: string;
+  expiresAt: string;
+}
+
+export interface InvitationCreated {
+  invitation: Invitation;
+  acceptPath: string;
+  emailSent: boolean;
+}

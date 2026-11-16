@@ -23,9 +23,10 @@ provider for security, reliability or cost reasons without rewriting features
 | Sign-in key storage | ASP.NET Core Data Protection | `Storage:DataProtectionKeyVaultKeyUri` or `Storage:DataProtectionKeyDirectory` | Azure Blob + Key Vault, or a private directory | Point at the new provider's key store, or use the directory option on a private volume. |
 | Secrets | .NET configuration | environment variables | Azure Key Vault references resolved by the host | Use the new host's secret store to inject the same environment variables. No code reads a vault directly. |
 | Malware scanning | `IMalwareScanner` | `Documents:MalwareScanMode`, `Documents:ClamAv` | `NotConfigured`, `ClamAv` (clamd over TCP; open source, runs as a container anywhere), `DevelopmentBypass` (dev) | A cloud-native scanner (for example Defender for Storage) would be one more adapter in Infrastructure. Scanner outages leave files `Pending`; `DocumentRescanService` catches up. |
+| Email | `IEmailSender` | `Email:Provider`, `Email:Smtp`, `Collaboration:PublicBaseUrl` | `None` (default), `Smtp` (any provider that offers SMTP), `Log` (dev) | Change the SMTP host and credentials. A provider's HTTP API would be one more adapter. Account emails from the sign-in system go through the same port. |
 | Opportunity sources | `IOpportunitySource` | `OpportunitySources:*` | Fixture | Not cloud-specific. |
 | AI (off) | `IAiProvider` | `Ai:Provider` | `None`, `Azure` (skeleton) | Add an adapter; the policy gate is provider-neutral. |
-| Background jobs | .NET hosted services | per-job `Enabled`/interval settings | In-process timers | Nothing to change. No cloud queue or scheduler is used. |
+| Background jobs | .NET hosted services | per-job `Enabled`/interval settings | In-process timers (retention purge, opportunity sync, document rescan, saved-search alerts) | Nothing to change. No cloud queue or scheduler is used. |
 | Infrastructure as code | — | `infra/` | Azure Bicep | Rewrite for the new provider (Terraform or its native tool). This is the only Azure-only directory. |
 
 ## Moving to another provider: checklist

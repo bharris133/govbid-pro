@@ -44,6 +44,16 @@ public interface IAppDbContext
 
     DbSet<AuditEvent> AuditEvents { get; }
 
+    DbSet<Notification> Notifications { get; }
+
+    DbSet<WorkTask> WorkTasks { get; }
+
+    DbSet<Comment> Comments { get; }
+
+    DbSet<Invitation> Invitations { get; }
+
+    DbSet<SavedSearchAlert> SavedSearchAlerts { get; }
+
     DbSet<AiRequestRecord> AiRequestRecords { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

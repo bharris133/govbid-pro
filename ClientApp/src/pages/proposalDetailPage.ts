@@ -16,6 +16,7 @@ import {
 import { describeError, el, formatDate, link, requireElement } from '../components/dom.js';
 import { blockedReasonLabels, complianceLabels, responseTypeLabels } from '../labels.js';
 import type { ComplianceStatus, Member, ProposalDetail, Requirement, RequirementInput, ResponseType } from '../models/api.js';
+import { renderProposalComments } from './proposalComments.js';
 import { renderProposalFiles } from './proposalFiles.js';
 
 interface Context {
@@ -324,6 +325,7 @@ export async function initProposalDetailPage(): Promise<void> {
         const closed = ['Won', 'Lost', 'Cancelled'].includes(d.status);
         document.title = `${d.title} · GovBid Pro`;
         const extra = el('div', { attrs: { id: 'proposal-extra' } });
+        const discussion = el('div', { attrs: { id: 'proposal-discussion' } });
         target.replaceChildren(
           el('h1', { text: d.title }),
           el('p', {}, [el('span', { text: d.statusLabel, className: 'tag' }), el('span', { text: responseTypeLabels[d.responseType], className: 'tag' }), ...(d.opportunityIsLive ? [] : [el('span', { text: 'Demo fixture', className: 'tag fixture' })])]),
@@ -335,8 +337,10 @@ export async function initProposalDetailPage(): Promise<void> {
           reviews(d, ctx, closed),
           history(d),
           extra,
+          discussion,
         );
         void renderProposalFiles(extra, d, closed);
+        void renderProposalComments(discussion, d);
         document.dispatchEvent(new CustomEvent('proposal:rendered', { detail: d }));
       },
     };

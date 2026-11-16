@@ -33,3 +33,8 @@
 | **Document version** | One stored file of a document. Uploading a new version keeps earlier ones; each is screened and scanned on its own. The document shows its current (highest) version. |
 | **Template** | A company document marked for reuse (boilerplate, capability statement). Copying it into a proposal creates an independent document. |
 | **Rescan** | Background job that screens stored versions with no malware verdict (scanner was off or unreachable). Malware quarantines the whole document. |
+| **Invitation** | A single-use, expiring offer to join a company with a role, bound to one email address. Only a hash of its secret is stored. |
+| **Notification** | An in-app message for one member (assignment, review, task, comment, join, saved-search alert), optionally also emailed. Links only point inside the app. |
+| **Task** | A piece of work with an optional assignee, due date and proposal. The assignee can always update its status. |
+| **Comment** | Discussion on a proposal, optionally about one requirement. Open to every member, including reviewers. |
+| **Saved-search alert** | A Daily or Weekly summary of notices that newly match a saved search. Each notice is reported once per search. |

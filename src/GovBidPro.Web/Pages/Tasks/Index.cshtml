@@ -1,0 +1,25 @@
+@page
+@model GovBidPro.Web.Pages.Tasks.IndexModel
+@{
+    ViewData["Title"] = "Tasks";
+    ViewData["Page"] = "tasks";
+}
+<h1>Tasks</h1>
+<form id="task-form" class="panel">
+    <h2>Add a task</h2>
+    <div class="filters">
+        <div class="field"><label for="t-title">Title</label><input id="t-title" maxlength="200" required /></div>
+        <div class="field"><label for="t-assignee">Assigned to</label><select id="t-assignee"><option value="">Unassigned</option></select></div>
+        <div class="field"><label for="t-due">Due date</label><input id="t-due" type="date" /></div>
+        <div class="field"><label for="t-proposal">Proposal (optional)</label><select id="t-proposal"><option value="">Not linked</option></select></div>
+    </div>
+    <div class="field"><label for="t-description">Details (optional)</label><textarea id="t-description" maxlength="2000" rows="2"></textarea></div>
+    <button type="submit">Add task</button>
+</form>
+<p id="task-status" role="status" aria-live="polite"></p>
+<fieldset class="inline-form">
+    <legend>Show</legend>
+    <label class="check"><input type="checkbox" id="mine-only" checked /> Only tasks assigned to me</label>
+    <label class="check"><input type="checkbox" id="include-closed" /> Done and cancelled tasks</label>
+</fieldset>
+<div id="tasks"><p>Loading…</p></div>

@@ -1,0 +1,14 @@
+@page
+@model GovBidPro.Web.Pages.Notifications.IndexModel
+@{
+    ViewData["Title"] = "Notifications";
+    ViewData["Page"] = "notifications";
+}
+<h1>Notifications</h1>
+<p id="notification-status" role="status" aria-live="polite"></p>
+<div class="panel">
+    <label class="check"><input type="checkbox" id="email-notifications" /> Also send my notifications by email</label>
+    <p id="email-availability" class="muted"></p>
+</div>
+<p><button type="button" id="mark-all-read" class="secondary">Mark all as read</button></p>
+<div id="notifications"><p>Loading…</p></div>

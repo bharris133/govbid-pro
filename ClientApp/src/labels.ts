@@ -1,4 +1,4 @@
-import type { ComplianceStatus, DataClassification, FitOutcome, GoNoGoDecision, ResponseType, SetAsideCategory, SourceNoticeType } from './models/api.js';
+import type { CompanyRole, ComplianceStatus, DataClassification, FitOutcome, GoNoGoDecision, ResponseType, SetAsideCategory, SourceNoticeType, WorkTaskStatus } from './models/api.js';
 
 export const responseTypeLabels: Record<ResponseType, string> = {
   Undetermined: 'Undetermined',
@@ -76,4 +76,18 @@ export const blockedReasonLabels: Record<string, string> = {
   'proposal.review_changes_requested': 'A reviewer requested changes',
   'proposal.mandatory_requirements_open': 'Mandatory requirements are still open',
   'proposal.transition_not_allowed': 'Not allowed from this status',
+};
+
+export const roleLabels: Record<CompanyRole, string> = {
+  Reviewer: 'Reviewer',
+  ProposalWriter: 'Proposal writer',
+  TeamManager: 'Team manager',
+  CompanyAdmin: 'Company admin',
+};
+
+export const taskStatusLabels: Record<WorkTaskStatus, string> = {
+  Open: 'Open',
+  InProgress: 'In progress',
+  Done: 'Done',
+  Cancelled: 'Cancelled',
 };

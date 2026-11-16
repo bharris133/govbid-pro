@@ -101,3 +101,5 @@ tr.open-mandatory th { border-left: 4px solid var(--warn-border); }
 #proposal-warnings { padding-left: 2rem; }
 td.actions { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
 tr.detail > td { background: var(--bg); }
+.badge { display: inline-block; min-width: 1.4em; padding: 0 .35em; border-radius: 999px; background: var(--accent); color: var(--bg); font-size: .75rem; text-align: center; }
+li.unread { border-left: 4px solid var(--accent); }

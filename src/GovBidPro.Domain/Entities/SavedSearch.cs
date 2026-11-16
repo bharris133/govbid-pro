@@ -57,6 +57,11 @@ public sealed class SavedSearch : ITenantOwned
 
     public void RecordEvaluation(DateTimeOffset at) => LastEvaluatedAt = at;
 
+    /// <summary>When the alert job last checked this search for new matches.</summary>
+    public DateTimeOffset? LastAlertedAt { get; private set; }
+
+    public void RecordAlertCheck(DateTimeOffset at) => LastAlertedAt = at;
+
     private static string NormalizeName(string? name)
     {
         var trimmed = name?.Trim() ?? string.Empty;

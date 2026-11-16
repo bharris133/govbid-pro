@@ -87,4 +87,16 @@ public sealed class MembersController(MemberService members) : ControllerBase
 {
     [HttpGet]
     public Task<IReadOnlyList<MemberDto>> List(CancellationToken cancellationToken) => members.ListActiveAsync(cancellationToken);
+
+    /// <summary>Company admins (configurable) change roles. The last company admin cannot be demoted.</summary>
+    [HttpPut("{userId}/role")]
+    public Task<MemberDto> ChangeRole(string userId, ChangeRoleCommand command, CancellationToken cancellationToken) => members.ChangeRoleAsync(userId, command, cancellationToken);
+
+    /// <summary>Removes a member's access. The last company admin cannot be removed.</summary>
+    [HttpDelete("{userId}")]
+    public async Task<IActionResult> Remove(string userId, CancellationToken cancellationToken)
+    {
+        await members.RemoveAsync(userId, cancellationToken);
+        return NoContent();
+    }
 }

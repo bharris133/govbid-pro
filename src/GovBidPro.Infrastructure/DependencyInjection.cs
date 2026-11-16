@@ -2,6 +2,7 @@ using GovBidPro.Application.Abstractions;
 using GovBidPro.Application.Ai;
 using GovBidPro.Application.Assessments;
 using GovBidPro.Application.Auditing;
+using GovBidPro.Application.Collaboration;
 using GovBidPro.Application.Companies;
 using GovBidPro.Application.Dashboard;
 using GovBidPro.Application.Documents;
@@ -12,6 +13,7 @@ using GovBidPro.Application.SavedSearches;
 using GovBidPro.Application.Security;
 using GovBidPro.Infrastructure.Ai;
 using GovBidPro.Infrastructure.Auditing;
+using GovBidPro.Infrastructure.Email;
 using GovBidPro.Infrastructure.Identity;
 using GovBidPro.Infrastructure.Persistence;
 using GovBidPro.Infrastructure.SamGov;
@@ -111,6 +113,29 @@ public static class DependencyInjection
             _ => new NotConfiguredMalwareScanner(),
         });
         services.AddScoped<DocumentRescanService>();
+
+        services.AddOptions<EmailOptions>().Bind(configuration.GetSection(EmailOptions.SectionName))
+            .Validate(o => EmailProviders.IsKnown(o.Provider), "Email:Provider must be None, Log or Smtp.")
+            .Validate(o => o.Provider is not EmailProviders.Log || isLocalEnvironment, "Email:Provider Log is only allowed in Development/Testing.")
+            .Validate(EmailOptions.IsValid, "Email:Smtp:Host and Email:FromAddress are required for Smtp.")
+            .ValidateOnStart();
+        services.AddSingleton<IEmailSender>(sp => sp.GetRequiredService<IOptions<EmailOptions>>().Value.Provider switch
+        {
+            EmailProviders.Smtp => ActivatorUtilities.CreateInstance<SmtpEmailSender>(sp),
+            EmailProviders.Log => ActivatorUtilities.CreateInstance<LogEmailSender>(sp),
+            _ => new DisabledEmailSender(),
+        });
+        var emailProvider = configuration[$"{EmailOptions.SectionName}:Provider"];
+        services.AddOptions<CollaborationOptions>().Bind(configuration.GetSection(CollaborationOptions.SectionName))
+            .Validate(CollaborationOptions.IsValid, "Collaboration settings are out of range or PublicBaseUrl is not an absolute origin.")
+            .Validate(o => emailProvider is not EmailProviders.Smtp || (o.PublicBaseUrl?.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ?? false), "Collaboration:PublicBaseUrl (https) is required when Email:Provider is Smtp.")
+            .ValidateOnStart();
+        services.AddScoped<NotificationService>();
+        services.AddScoped<IProposalNotifier, ProposalNotifier>();
+        services.AddScoped<TaskService>();
+        services.AddScoped<CommentService>();
+        services.AddScoped<InvitationService>();
+        services.AddScoped<SavedSearchAlertService>();
 
         services.AddScoped<IAiProvider>(sp =>
         {

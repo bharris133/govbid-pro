@@ -121,6 +121,38 @@ test('company user can search fixture opportunities and save a search', async ({
   await versionForm.getByRole('button', { name: 'Upload new version' }).click();
   await expect(page.locator('#upload-status')).toContainText('Version 2 of approach.txt uploaded.');
   await expect(page.locator('#documents')).toContainText('Version 2 (current)');
+
+  // P1.6: invite a teammate, add a task, comment on the proposal, and see the notifications page.
+  await page.goto('/Company');
+  await expect(page.locator('html')).toHaveAttribute('data-client-ready', 'true');
+  await expect(page.locator('#members')).toContainText('(you)');
+  await page.getByLabel('Email address').fill('teammate@example.test');
+  await page.getByRole('button', { name: 'Send invitation' }).click();
+  await expect(page.locator('#members-status')).toContainText('Invitation created.');
+  await expect(page.getByLabel('Invitation link (shown once)')).toHaveValue(/\/Invitations\/Accept\?token=/);
+  await expect(page.locator('#invitations')).toContainText('teammate@example.test');
+
+  await page.goto('/Tasks');
+  await expect(page.locator('html')).toHaveAttribute('data-client-ready', 'true');
+  await page.getByLabel('Title', { exact: true }).fill('Collect past performance references');
+  await page.getByLabel('Assigned to', { exact: true }).selectOption({ index: 1 });
+  await page.getByRole('button', { name: 'Add task' }).click();
+  await expect(page.locator('#task-status')).toContainText('added');
+  await expect(page.locator('#tasks')).toContainText('Collect past performance references');
+  await page.getByLabel('Status of Collect past performance references').selectOption('Done');
+  await expect(page.locator('#tasks')).toContainText('Nothing is assigned to you right now.');
+
+  await page.goto('/Proposals');
+  await expect(page.locator('html')).toHaveAttribute('data-client-ready', 'true');
+  await page.locator('#proposals a').first().click();
+  await expect(page.locator('#proposal-files')).toContainText('approach.txt');
+  await page.getByLabel('Add a comment').fill('Pricing volume still needs the travel estimate.');
+  await page.getByRole('button', { name: 'Post comment' }).click();
+  await expect(page.locator('#comment-list')).toContainText('travel estimate');
+
+  await page.goto('/Notifications');
+  await expect(page.locator('html')).toHaveAttribute('data-client-ready', 'true');
+  await expect(page.locator('#notifications')).toContainText('No notifications yet.');
 });
 
 test('unauthenticated API access is rejected', async ({ request }) => {

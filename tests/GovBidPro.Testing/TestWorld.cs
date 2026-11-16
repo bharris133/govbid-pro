@@ -1,6 +1,8 @@
 using GovBidPro.Application.Abstractions;
 using GovBidPro.Application.Ai;
 using GovBidPro.Application.Assessments;
+using GovBidPro.Application.Collaboration;
+using GovBidPro.Application.Companies;
 using GovBidPro.Application.Documents;
 using GovBidPro.Application.Opportunities;
 using GovBidPro.Application.Proposals;
@@ -141,6 +143,38 @@ public sealed class TestWorld(string connectionString, MutableTimeProvider clock
 
     public AssessmentService Assessments(GovBidProDbContext db, ITenantContext tenant, RecordingAuditLog? audit = null) =>
         new(db, tenant, audit ?? new RecordingAuditLog(), new DbUserDirectory(db), Options.Create(Assessment), Clock);
+
+    public CollaborationOptions Collaboration { get; set; } = new() { PublicBaseUrl = "https://app.example.test", RequireConfirmedEmailToAcceptInvitation = false };
+
+    public RecordingEmailSender Email { get; } = new();
+
+    public NotificationService Notifications(GovBidProDbContext db, ITenantContext tenant) =>
+        new(db, tenant, Email, new DbUserDirectory(db), Options.Create(Collaboration), Clock, NullLogger<NotificationService>.Instance);
+
+    public TaskService Tasks(GovBidProDbContext db, ITenantContext tenant, RecordingAuditLog? audit = null) =>
+        new(db, tenant, audit ?? new RecordingAuditLog(), new DbUserDirectory(db), Notifications(db, tenant), Clock);
+
+    public CommentService Comments(GovBidProDbContext db, ITenantContext tenant, RecordingAuditLog? audit = null) =>
+        new(db, tenant, audit ?? new RecordingAuditLog(), new DbUserDirectory(db), Notifications(db, tenant), Clock);
+
+    public InvitationService Invitations(GovBidProDbContext db, ITenantContext tenant, RecordingAuditLog? audit = null) =>
+        new(db, tenant, audit ?? new RecordingAuditLog(), new DbUserDirectory(db), Email, Notifications(db, tenant), Options.Create(Collaboration), Clock, NullLogger<InvitationService>.Instance);
+
+    public MemberService Members(GovBidProDbContext db, ITenantContext tenant, RecordingAuditLog? audit = null) =>
+        new(db, tenant, new DbUserDirectory(db), audit ?? new RecordingAuditLog(), Options.Create(Collaboration), Clock);
+
+    public SavedSearchAlertService Alerts(GovBidProDbContext db, ITenantContext tenant) =>
+        new(db, tenant, Notifications(db, tenant), Options.Create(Collaboration), Clock, NullLogger<SavedSearchAlertService>.Instance);
+
+    /// <summary>Creates a sign-in account with no company. Returns its id.</summary>
+    public async Task<string> CreateUserAsync(string email, bool confirmed = true)
+    {
+        await using var db = Context(PostgresFixture.SystemContext());
+        var user = new ApplicationUser { Id = Guid.NewGuid().ToString(), UserName = email, Email = email, NormalizedEmail = email.ToUpperInvariant(), NormalizedUserName = email.ToUpperInvariant(), EmailConfirmed = confirmed };
+        db.Users.Add(user);
+        await db.SaveChangesAsync();
+        return user.Id;
+    }
 
     public ProposalOptions Proposal { get; set; } = new();
 

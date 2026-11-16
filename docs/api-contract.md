@@ -5,6 +5,7 @@ All endpoints are under `/api/v1`, return JSON (camelCase, enums as strings) and
 | Method | Route | Auth | Behavior |
 |---|---|---|---|
 | GET | `/health/live` | none | Liveness, no checks, no details. |
+| GET, POST | `/Invitations/Accept?token=` (page) | signed in | Shows what the invitation offers and joins the company on POST (antiforgery form). `no-store`, `no-referrer`. |
 | GET | `/health/ready` | none | Database readiness, no details. |
 | GET | `/api/v1/me` | signed in | User, resolved company and role, AI and SAM.gov status flags. |
 | GET | `/api/v1/dashboard` | tenant member | Discovery counts (open, due in 7 days, new, amended), upcoming deadlines, the company's saved searches with open and new match counts, and source freshness. |
@@ -17,6 +18,22 @@ All endpoints are under `/api/v1`, return JSON (camelCase, enums as strings) and
 | POST | `/api/v1/opportunities/{id}/assessments` | ProposalWriter+ for `Watch`/`Undecided`; TeamManager+ (configurable) for `Go`/`NoGo` | Body `{ decision, rationale }`. Scores now and appends an immutable record (score, criteria snapshot, notice revision, author). Rationale required for Go/No-go. 201. |
 | GET | `/api/v1/assessments?decision=` | tenant member | Latest assessment per opportunity, with `opportunityAmendedSince`. |
 | GET | `/api/v1/company/members` | tenant member | Active members (id, email, role) for assignment and reviewer pickers. |
+| PUT | `/api/v1/company/members/{userId}/role` | CompanyAdmin (configurable) | Body `{ role }`. Cannot grant above your own role or demote the last company admin (409). |
+| DELETE | `/api/v1/company/members/{userId}` | CompanyAdmin (configurable) | Removes access; pending reviews assigned to the person are superseded. 409 for the last company admin. 204. |
+| GET | `/api/v1/company/invitations` | CompanyAdmin (configurable) | Invitations with state (`Pending`, `Accepted`, `Revoked`, `Expired`). Never includes the secret. |
+| POST | `/api/v1/company/invitations` | CompanyAdmin (configurable) | Body `{ email, role }`. Returns the invitation, `acceptPath` (the one-time link, shown once) and `emailSent`. Replaces an earlier pending invitation for the same address. 201, `no-store`. |
+| DELETE | `/api/v1/company/invitations/{id}` | CompanyAdmin (configurable) | Revokes a pending invitation. 204; 409 if not pending. |
+| GET | `/api/v1/notifications?unreadOnly=` | tenant member | The caller's own notifications (latest 100) and unread count. |
+| GET | `/api/v1/notifications/unread-count` | tenant member | `{ unread }`. |
+| POST | `/api/v1/notifications/{id}/read`, `/api/v1/notifications/read-all` | tenant member | Mark own notifications read. |
+| GET, PUT | `/api/v1/notifications/preferences` | tenant member | `{ emailNotifications, emailAvailable }`; PUT body `{ emailNotifications }`. |
+| GET | `/api/v1/tasks?mine=&proposalId=&includeClosed=` | tenant member | The company's tasks, soonest due first, with `overdue`. |
+| POST | `/api/v1/tasks` | ProposalWriter+ | Body `{ title, description?, assigneeUserId?, dueOn?, proposalId? }`. Notifies the assignee. 201. |
+| PUT | `/api/v1/tasks/{id}` | ProposalWriter+ | Edit title, details, assignee and due date. |
+| POST | `/api/v1/tasks/{id}/status` | the assignee, or ProposalWriter+ | Body `{ status: Open \| InProgress \| Done \| Cancelled }`. |
+| GET | `/api/v1/proposals/{id}/comments` | tenant member | Comments oldest first, with `canDelete`. Deleted comments keep their place without text. |
+| POST | `/api/v1/proposals/{id}/comments` | tenant member | Body `{ body, requirementId? }`. Notifies the proposal owner and the requirement owner (not the text). 201. |
+| DELETE | `/api/v1/proposals/{id}/comments/{commentId}` | the author, or TeamManager+ | 204. |
 | GET | `/api/v1/proposals?includeClosed=` | tenant member | The company's proposals with status label, owner, due date and compliance summary. Closed (Won, Lost, Cancelled) hidden unless `includeClosed=true`. |
 | POST | `/api/v1/proposals` | ProposalWriter+ | Body `{ opportunityId, title?, responseType? }`. Starts a response: snapshots the notice revision and deadline and adds default sections for the response type. 409 if the company already has an open proposal for the notice. 201. |
 | GET | `/api/v1/proposals/{id}` | tenant member | Detail: overview, configured stage labels, `nextStages` with `allowed` and `blockedReason`, compliance summary, sections, requirements, reviews (with `currentRound`) and status history. |
