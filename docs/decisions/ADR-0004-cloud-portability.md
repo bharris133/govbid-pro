@@ -23,6 +23,7 @@ The owner reported an Azure outage in the week before this decision, which raise
 - Moving provider costs one adapter per service that has no neutral adapter, new infrastructure code and a data migration.
   The steps are in [../cloud-portability.md](../cloud-portability.md).
 - Azure-only conveniences (for example Defender for Storage event-driven scanning or Service Bus) are not used directly.
-  If one is ever adopted it goes behind a port with a neutral alternative.
+  If one is ever adopted it goes behind a port with a neutral alternative. Defender for Storage malware scanning was
+  adopted this way in [ADR-0005](ADR-0005-azure-defender-malware-scanning.md), with ClamAV as the neutral alternative.
 - This supersedes the sentence in ADR-0002 that another cloud requires a new ADR for the *application*; a hosting change
   still needs an ADR recording the new provider's security and compliance review.

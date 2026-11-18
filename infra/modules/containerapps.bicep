@@ -9,6 +9,9 @@ param containerImage string
 param connectionSecretUri string
 param blobServiceUri string
 param dataProtectionKeyUri string
+@allowed(['AzureDefender', 'NotConfigured'])
+@description('Documents:MalwareScanMode. The app is provider-neutral; this is the only place Azure Defender is selected.')
+param malwareScanMode string
 @secure()
 param appInsightsConnectionString string
 param minReplicas int
@@ -69,6 +72,9 @@ resource web 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'Storage__ContainerName', value: 'documents' }
             { name: 'Storage__ManagedIdentityClientId', value: webIdentityClientId }
             { name: 'Storage__DataProtectionKeyVaultKeyUri', value: dataProtectionKeyUri }
+            { name: 'Documents__MalwareScanMode', value: malwareScanMode }
+            // Defender verdicts usually arrive within a minute or two of upload; check every minute so files open quickly.
+            { name: 'Documents__Rescan__IntervalMinutes', value: '1' }
             { name: 'AZURE_CLIENT_ID', value: webIdentityClientId }
             { name: 'APPLICATIONINSIGHTS_CONNECTION_STRING', secretRef: 'appinsights-connection' }
           ]

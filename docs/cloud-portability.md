@@ -22,7 +22,7 @@ provider for security, reliability or cost reasons without rewriting features
 | File storage | `IObjectStorage` | `Storage:Provider` | `Local` (dev), `FileSystem` (any host with a persistent volume), `AzureBlob` | Add one adapter class (about 70 lines, three methods) and one line in `StorageProviders`/`DependencyInjection`. An S3-compatible adapter covers AWS, Cloudflare R2, Backblaze, DigitalOcean Spaces and MinIO. |
 | Sign-in key storage | ASP.NET Core Data Protection | `Storage:DataProtectionKeyVaultKeyUri` or `Storage:DataProtectionKeyDirectory` | Azure Blob + Key Vault, or a private directory | Point at the new provider's key store, or use the directory option on a private volume. |
 | Secrets | .NET configuration | environment variables | Azure Key Vault references resolved by the host | Use the new host's secret store to inject the same environment variables. No code reads a vault directly. |
-| Malware scanning | `IMalwareScanner` | `Documents:MalwareScanMode`, `Documents:ClamAv` | `NotConfigured`, `ClamAv` (clamd over TCP; open source, runs as a container anywhere), `DevelopmentBypass` (dev) | A cloud-native scanner (for example Defender for Storage) would be one more adapter in Infrastructure. Scanner outages leave files `Pending`; `DocumentRescanService` catches up. |
+| Malware scanning | `IMalwareScanner`, `IStoredObjectMalwareScanner` (scan-after-store platforms) | `Documents:MalwareScanMode`, `Documents:ClamAv` | `NotConfigured`, `ClamAv` (clamd over TCP; open source, runs as a container anywhere), `AzureDefender` (Defender for Storage on-upload scanning, verdict read from a blob index tag; [ADR-0005](decisions/ADR-0005-azure-defender-malware-scanning.md)), `DevelopmentBypass` (dev) | Set `ClamAv`, or add one `IStoredObjectMalwareScanner` adapter for the new provider's bucket scanner (for example GuardDuty Malware Protection for S3). Files without a verdict stay `Pending`; `DocumentRescanService` catches up. |
 | Email | `IEmailSender` | `Email:Provider`, `Email:Smtp`, `Collaboration:PublicBaseUrl` | `None` (default), `Smtp` (any provider that offers SMTP), `Log` (dev) | Change the SMTP host and credentials. A provider's HTTP API would be one more adapter. Account emails from the sign-in system go through the same port. |
 | Opportunity sources | `IOpportunitySource` | `OpportunitySources:*` | Fixture | Not cloud-specific. |
 | AI (off) | `IAiProvider` | `Ai:Provider` | `None`, `Azure` (skeleton) | Add an adapter; the policy gate is provider-neutral. |
@@ -32,7 +32,8 @@ provider for security, reliability or cost reasons without rewriting features
 ## Moving to another provider: checklist
 
 1. Provision a container host, managed PostgreSQL 16, private object storage and a secret store on the new provider.
-2. Write the storage adapter if the provider is not already covered, and set `Storage:Provider`.
+2. Write the storage adapter if the provider is not already covered, and set `Storage:Provider`. If the environment used
+   `AzureDefender` scanning, switch `Documents:MalwareScanMode` to `ClamAv` or the new provider's scanner adapter.
 3. Set the same environment variables the app reads today (`ConnectionStrings__GovBidPro`, `Storage__*`, and so on).
 4. Stop writes, `pg_dump` the database and restore it on the new server. Copy the document objects with the same keys
    (`tenants/{tenant}/documents/{id}/v{n}`); storage keys are provider-neutral.

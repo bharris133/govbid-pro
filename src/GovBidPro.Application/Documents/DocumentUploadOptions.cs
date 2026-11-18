@@ -12,7 +12,8 @@ public sealed class DocumentUploadOptions
 
     /// <summary>
     /// "NotConfigured" (default; downloads denied until a scanner is configured),
-    /// "ClamAv" (clamd over TCP, see Documents:ClamAv) or
+    /// "ClamAv" (clamd over TCP, see Documents:ClamAv),
+    /// "AzureDefender" (Microsoft Defender for Storage on-upload scanning; requires Storage:Provider AzureBlob) or
     /// "DevelopmentBypass" (local Development environment only; rejected at startup elsewhere).
     /// </summary>
     public string MalwareScanMode { get; set; } = "NotConfigured";

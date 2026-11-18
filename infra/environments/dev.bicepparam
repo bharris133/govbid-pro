@@ -9,5 +9,7 @@ param postgresAdministratorPassword = readEnvironmentVariable('GOVBID_PG_ADMIN_P
 param postgresSkuName = 'Standard_B1ms'
 param postgresSkuTier = 'Burstable'
 param storageSkuName = 'Standard_LRS'
+param malwareScanningEnabled = true
+param malwareScanningCapGBPerMonth = 50
 param minReplicas = 1
 param maxReplicas = 2

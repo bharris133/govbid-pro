@@ -52,6 +52,23 @@ public sealed class FixedMalwareScanner(ScanStatus result) : IMalwareScanner
     }
 }
 
+/// <summary>Platform (post-storage) scanner such as Defender for Storage: verdicts are looked up by storage key.</summary>
+public sealed class FakePlatformMalwareScanner : IStoredObjectMalwareScanner
+{
+    public Dictionary<string, ScanStatus> Verdicts { get; } = [];
+
+    public int ContentScans { get; private set; }
+
+    public Task<ScanStatus> ScanAsync(ReadOnlyMemory<byte> content, string fileName, CancellationToken cancellationToken)
+    {
+        ContentScans++;
+        return Task.FromResult(ScanStatus.Pending);
+    }
+
+    public Task<ScanStatus> GetVerdictAsync(string storageKey, CancellationToken cancellationToken) =>
+        Task.FromResult(Verdicts.TryGetValue(storageKey, out var verdict) ? verdict : ScanStatus.Pending);
+}
+
 /// <summary>Network-free AI provider (AI-AZ-06). Counts calls so tests can prove zero egress.</summary>
 public sealed class FakeAiProvider : IAiProvider
 {

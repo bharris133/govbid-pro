@@ -19,7 +19,13 @@ internal sealed class AzureBlobObjectStorage : IObjectStorage
 
     public AzureBlobObjectStorage(IOptions<StorageOptions> options)
     {
-        var value = options.Value;
+        _container = CreateContainerClient(options.Value);
+    }
+
+    /// <summary>Managed identity client for the documents container; shared with the Defender verdict reader.</summary>
+    public static BlobContainerClient CreateContainerClient(StorageOptions value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
         if (string.IsNullOrWhiteSpace(value.BlobServiceUri))
         {
             throw new InvalidOperationException("Storage:BlobServiceUri must be configured for Azure Blob storage.");
@@ -29,7 +35,7 @@ internal sealed class AzureBlobObjectStorage : IObjectStorage
         {
             ManagedIdentityClientId = value.ManagedIdentityClientId,
         });
-        _container = new BlobServiceClient(new Uri(value.BlobServiceUri), credential).GetBlobContainerClient(value.ContainerName);
+        return new BlobServiceClient(new Uri(value.BlobServiceUri), credential).GetBlobContainerClient(value.ContainerName);
     }
 
     public async Task PutAsync(string key, Stream content, string contentType, CancellationToken cancellationToken)

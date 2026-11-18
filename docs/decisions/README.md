@@ -6,6 +6,7 @@
 | [ADR-0002](ADR-0002-azure-hosting.md) | Azure hosting with Container Apps, PostgreSQL Flexible Server, Blob Storage and Key Vault | Accepted (D-01); production configuration pending OPS-01 |
 | [ADR-0003](ADR-0003-configurable-retention.md) | Configurable, versioned retention policies | Accepted (D-02 provisional); pending LEG-01 |
 | [ADR-0004](ADR-0004-cloud-portability.md) | Cloud portability: ports and adapters, provider chosen by configuration | Accepted (owner rule) |
+| [ADR-0005](ADR-0005-azure-defender-malware-scanning.md) | Malware scanning on Azure with Defender for Storage, behind a portable port | Accepted (owner decision) |
 | [ADR-SEC-001](ADR-SEC-001-approved-data-scope.md) | Release 1 approved data scope | Accepted |
 | [ADR-SEC-002](ADR-SEC-002-tenant-identity-authorization.md) | Tenant identity and authorization | Accepted |
 | [ADR-SEC-003](ADR-SEC-003-storage-classification-flow.md) | Storage and classification flow | Accepted |
