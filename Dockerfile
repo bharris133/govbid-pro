@@ -29,6 +29,10 @@ WORKDIR /app
 ENV ASPNETCORE_HTTP_PORTS=8080 \
     DOTNET_RUNNING_IN_CONTAINER=true
 COPY --from=build /app ./
+# Upload storage mount point (compose.yaml mounts a named volume here). It must exist in the image and
+# be owned by the non-root app user: Docker copies this ownership into a new, empty named volume.
+# Without it the volume is root-owned and every document upload fails with 500 (permission denied).
+RUN mkdir -p /data/storage && chown $APP_UID:$APP_UID /data/storage
 USER $APP_UID
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "GovBidPro.Web.dll"]

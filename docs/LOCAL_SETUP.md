@@ -195,6 +195,7 @@ Then run `.\start-local.ps1` and register your account again.
 | Sign-in does not stick | Use `http://localhost:<port>` exactly. The local cookie is for plain HTTP on localhost; do not expose the port to other machines. |
 | Platform administrator endpoint returns 403 | Run `init-local-admin.ps1`, enable two-factor authentication, then sign out and in with a code. |
 | `dotnet ef` cannot connect | The database container must be running, and the connection-string variables from section 4 must be set in the same window. |
+| Document upload returns `500 Internal Server Error`; web log shows `UnauthorizedAccessException: Access to the path '/data/storage/...' is denied` | The upload volume was created root-owned by an image built before the storage-permission fix. Rebuild with `.\start-local.ps1`. If uploads still fail, the volume already holds files from another setup: run `docker compose down`, `docker volume rm govbid-pro_storage-data` (deletes uploaded files only), then `.\start-local.ps1`. |
 | Edited code but the app did not change | Rebuild: `.\start-local.ps1` (without `-NoBuild`). |
 
 Running `docker compose up --build -d` directly still works and is what the scripts call. Without a `.env` file it falls back to the fixed local password `govbid_local_dev`, so prefer `start-local.ps1`, which generates a random one.
