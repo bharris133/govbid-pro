@@ -42,6 +42,17 @@ services:
       OpportunitySources__Sync__Enabled: ${GOVBID_SAMGOV_ENABLED:-false}
       OpportunitySources__Sync__IntervalMinutes: ${GOVBID_SAMGOV_SYNC_MINUTES:-360}
       OpportunitySources__Fixture__ImportOnStartup: ${GOVBID_DEMO_FIXTURES:-true}
+      # Email (optional). Default Log writes emails to the container log instead of sending them. Set
+      # GOVBID_EMAIL_PROVIDER=Smtp plus the GOVBID_SMTP_* values in .env (never committed) to really send,
+      # for example through SendGrid. Links in emails point at this machine (localhost), so they only open here.
+      Email__Provider: ${GOVBID_EMAIL_PROVIDER:-Log}
+      Email__FromAddress: ${GOVBID_EMAIL_FROM_ADDRESS:-}
+      Email__FromName: ${GOVBID_EMAIL_FROM_NAME:-GovBid Pro}
+      Email__Smtp__Host: ${GOVBID_SMTP_HOST:-}
+      Email__Smtp__Port: ${GOVBID_SMTP_PORT:-587}
+      Email__Smtp__Username: ${GOVBID_SMTP_USERNAME:-}
+      Email__Smtp__Password: ${GOVBID_SMTP_PASSWORD:-}
+      Collaboration__PublicBaseUrl: http://localhost:${GOVBID_WEB_PORT:-8080}
     ports:
       - "127.0.0.1:${GOVBID_WEB_PORT:-8080}:8080"
     volumes:

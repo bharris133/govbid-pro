@@ -43,6 +43,14 @@ public sealed class CollaborationOptions
             && o.Alerts.MaxItemsPerAlert is >= 1 and <= 100 && o.Alerts.BatchSize is >= 1 and <= 1000;
     }
 
+    /// <summary>
+    /// Whether <paramref name="publicBaseUrl"/> may be used in links that are emailed: https everywhere, or
+    /// (Development/Testing only) plain http on this machine, so a developer can test real email delivery locally.
+    /// </summary>
+    public static bool IsUsableForEmail(string? publicBaseUrl, bool isLocalEnvironment) =>
+        Uri.TryCreate(publicBaseUrl, UriKind.Absolute, out var uri)
+        && (uri.Scheme == Uri.UriSchemeHttps || (isLocalEnvironment && uri.Scheme == Uri.UriSchemeHttp && uri.IsLoopback));
+
     /// <summary>Absolute link for emails, or null when no public address is configured.</summary>
     public string? AbsoluteLink(string? path) =>
         string.IsNullOrWhiteSpace(PublicBaseUrl) || string.IsNullOrWhiteSpace(path) ? null : PublicBaseUrl.TrimEnd('/') + path;

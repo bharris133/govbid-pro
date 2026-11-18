@@ -164,7 +164,7 @@ With your own SAM.gov public API key the app imports real notices from the offic
 
    A good run logs `Sync sam.gov: Succeeded, pages ..., created N ...`. Then open **Opportunities**: the source banner shows `Live source (sam.gov)` with a recent time, and the new notices are tagged **Live source** with links to sam.gov.
 
-If it fails: the web container exiting with `OpportunitySources:SamGov is enabled but ApiKey ... is invalid` means the key line is empty or misspelled. `SAM.gov rejected the API key or access (HTTP 401)` (or 403) means SAM.gov did not accept the key (new keys can take a while to activate). a `RateLimited` status means the daily quota was used; the app retries later on its own. To go back to demo data only, set `GOVBID_SAMGOV_ENABLED=false` and restart.
+If it fails: the web container exiting with `OpportunitySources:SamGov is enabled but ApiKey ... is invalid` means the key line is empty or misspelled. `SAM.gov rejected the API key or access (HTTP 401)` (or 403) means SAM.gov did not accept the key (new keys can take a while to activate). A `RateLimited` status means the daily quota was used; the app retries later on its own. To go back to demo data only, set `GOVBID_SAMGOV_ENABLED=false` and restart.
 
 ## 7. View logs
 
@@ -174,6 +174,29 @@ docker compose logs --tail 100 web    # last 100 lines
 docker compose logs db                # PostgreSQL
 docker compose ps                     # container status and ports
 ```
+
+## 7a. Send real email (optional)
+
+By default the local app does not send email: each invitation, alert or password reset is written to the web log (`DEV EMAIL (not sent)`, see section 7). To really send, use any SMTP provider. With SendGrid:
+
+1. In SendGrid, verify a sender: **Settings > Sender Authentication > Verify a Single Sender** (or authenticate a domain you own) and click the link SendGrid emails you. SendGrid refuses mail from any address that is not verified.
+2. In SendGrid, **Settings > API Keys > Create API Key** with at least **Mail Send** access. The key is shown once and starts with `SG.`. (The separate "API Key ID" is not used.)
+3. Add to `.env` (never commit it):
+
+   ```dotenv
+   GOVBID_EMAIL_PROVIDER=Smtp
+   GOVBID_EMAIL_FROM_ADDRESS=the-address-you-verified@example.com
+   GOVBID_SMTP_HOST=smtp.sendgrid.net
+   GOVBID_SMTP_PORT=587
+   GOVBID_SMTP_USERNAME=apikey
+   GOVBID_SMTP_PASSWORD=SG.your-key
+   ```
+
+   `GOVBID_SMTP_USERNAME` is the literal word `apikey`. If your network blocks port 587, use `2525`.
+4. Apply it: `docker compose up -d web` (or `.\start-local.ps1`).
+5. Test: sign in as a company administrator, invite an address you can read (a different one from your own account), and check that inbox, including spam. The invitation link points at `http://localhost:8080`, so it only opens on this machine. If nothing arrives, `docker compose logs --tail 100 web` shows the SMTP error, and SendGrid's **Activity** page shows whether it received the message.
+
+To stop sending, set `GOVBID_EMAIL_PROVIDER=Log` and run `docker compose up -d web` again. If the key ever leaks, delete it in SendGrid and create a new one.
 
 ## 8. Stop and restart
 
