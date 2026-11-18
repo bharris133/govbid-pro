@@ -34,6 +34,8 @@ server. It has **not been run against the live service**, because no API key has
 | `OpportunitySources:Sync:IntervalMinutes` | `360` | Minutes between runs. |
 | `OpportunitySources:Sync:MaxPagesPerRun` | `5` | Request budget per source per run. |
 
+For the local Docker Compose setup these are set from `.env` (`GOVBID_SAMGOV_ENABLED`, `GOVBID_SAMGOV_API_KEY`, `GOVBID_SAMGOV_LOOKBACK_DAYS`, `GOVBID_SAMGOV_SYNC_MINUTES`, `GOVBID_DEMO_FIXTURES`); see section 6a of [LOCAL_SETUP.md](../LOCAL_SETUP.md).
+
 SAM.gov limits requests per day by account type, and the documentation does not publish the numbers. Start with the
 defaults (about 20 requests a day) and check your account's limit before raising them.
 

@@ -1,6 +1,6 @@
 # Local setup on Windows
 
-This guide runs GovBid Pro on a Windows 10/11 machine with Docker Desktop. It needs no Azure account, no Azure credentials, no SAM.gov key and no AI key. The local app shows **fictional demo fixture notices**, labeled as such; AI stays off.
+This guide runs GovBid Pro on a Windows 10/11 machine with Docker Desktop. It needs no Azure account, no Azure credentials, no SAM.gov key and no AI key. The local app shows **fictional demo fixture notices**, labeled as such; AI stays off. If you have a SAM.gov API key you can pull live opportunities as well (section 6a).
 
 Run every command in **PowerShell** from the repository root unless a step says otherwise. Windows PowerShell 5.1 and PowerShell 7 both work.
 
@@ -140,6 +140,31 @@ npx playwright install chromium
 $env:GOVBID_BASE_URL = 'http://localhost:8080'
 npm run test:browser
 ```
+
+## 6a. Optional: pull live opportunities from SAM.gov
+
+With your own SAM.gov public API key the app imports real notices from the official Get Opportunities API. Details and limits: [operations/sam-gov-sync.md](operations/sam-gov-sync.md).
+
+1. Open `.env` (not `.env.example`) with `notepad .env` and add or edit these lines. Paste the key only here: `.env` is ignored by Git.
+
+   ```
+   GOVBID_SAMGOV_ENABLED=true
+   GOVBID_SAMGOV_API_KEY=<your key, no quotes>
+   GOVBID_DEMO_FIXTURES=false
+   ```
+
+   `GOVBID_DEMO_FIXTURES=false` stops importing the demo notices. Notices already imported stay (labeled as demo) until you run `.\reset-local.ps1`, which deletes all local data.
+2. Restart so the container picks up the change: `.\start-local.ps1 -NoBuild` (or `docker compose up -d`).
+3. The app syncs once at startup and then every 6 hours (`GOVBID_SAMGOV_SYNC_MINUTES`), at most 5 API requests per run, covering notices posted in the last 2 days (`GOVBID_SAMGOV_LOOKBACK_DAYS`).
+4. Check the result:
+
+   ```powershell
+   docker compose logs web | Select-String "Sync sam.gov|SamGov|sam.gov"
+   ```
+
+   A good run logs `Sync sam.gov: Succeeded, pages ..., created N ...`. Then open **Opportunities**: the source banner shows `Live source (sam.gov)` with a recent time, and the new notices are tagged **Live source** with links to sam.gov.
+
+If it fails: the web container exiting with `OpportunitySources:SamGov is enabled but ApiKey ... is invalid` means the key line is empty or misspelled. `SAM.gov rejected the API key or access (HTTP 401)` (or 403) means SAM.gov did not accept the key (new keys can take a while to activate). a `RateLimited` status means the daily quota was used; the app retries later on its own. To go back to demo data only, set `GOVBID_SAMGOV_ENABLED=false` and restart.
 
 ## 7. View logs
 

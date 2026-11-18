@@ -33,6 +33,15 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__GovBidPro: Host=db;Port=5432;Database=govbidpro;Username=govbid;Password=${GOVBID_LOCAL_DB_PASSWORD:-govbid_local_dev}
       Storage__LocalRootPath: /data/storage
+      # Live SAM.gov opportunities (optional). Set GOVBID_SAMGOV_ENABLED=true and GOVBID_SAMGOV_API_KEY in
+      # .env (never committed). The same switch turns on the scheduled sync, which runs once at startup and
+      # then every GOVBID_SAMGOV_SYNC_MINUTES. GOVBID_DEMO_FIXTURES=false stops importing the demo notices.
+      OpportunitySources__SamGov__Enabled: ${GOVBID_SAMGOV_ENABLED:-false}
+      OpportunitySources__SamGov__ApiKey: ${GOVBID_SAMGOV_API_KEY:-}
+      OpportunitySources__SamGov__LookbackDays: ${GOVBID_SAMGOV_LOOKBACK_DAYS:-2}
+      OpportunitySources__Sync__Enabled: ${GOVBID_SAMGOV_ENABLED:-false}
+      OpportunitySources__Sync__IntervalMinutes: ${GOVBID_SAMGOV_SYNC_MINUTES:-360}
+      OpportunitySources__Fixture__ImportOnStartup: ${GOVBID_DEMO_FIXTURES:-true}
     ports:
       - "127.0.0.1:${GOVBID_WEB_PORT:-8080}:8080"
     volumes:
