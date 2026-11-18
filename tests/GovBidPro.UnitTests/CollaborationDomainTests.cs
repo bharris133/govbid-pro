@@ -128,4 +128,17 @@ public sealed class CollaborationDomainTests
         Assert.True(EmailOptions.IsValid(new EmailOptions { Provider = EmailProviders.Smtp, FromAddress = "no-reply@example.test", Smtp = { Host = "smtp.example.test" } }));
         Assert.False(EmailProviders.IsKnown("SendGrid"));
     }
+
+    [Fact]
+    public void Emailed_links_need_https_except_localhost_in_development()
+    {
+        Assert.True(CollaborationOptions.IsUsableForEmail("https://app.example.test", isLocalEnvironment: false));
+        Assert.False(CollaborationOptions.IsUsableForEmail("http://app.example.test", isLocalEnvironment: false));
+        Assert.False(CollaborationOptions.IsUsableForEmail("http://localhost:8080", isLocalEnvironment: false));
+        Assert.True(CollaborationOptions.IsUsableForEmail("http://localhost:8080", isLocalEnvironment: true));
+        Assert.True(CollaborationOptions.IsUsableForEmail("http://127.0.0.1:8080", isLocalEnvironment: true));
+        Assert.False(CollaborationOptions.IsUsableForEmail("http://app.example.test", isLocalEnvironment: true));
+        Assert.False(CollaborationOptions.IsUsableForEmail(null, isLocalEnvironment: true));
+        Assert.False(CollaborationOptions.IsUsableForEmail("", isLocalEnvironment: false));
+    }
 }

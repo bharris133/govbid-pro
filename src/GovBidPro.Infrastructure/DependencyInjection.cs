@@ -128,7 +128,7 @@ public static class DependencyInjection
         var emailProvider = configuration[$"{EmailOptions.SectionName}:Provider"];
         services.AddOptions<CollaborationOptions>().Bind(configuration.GetSection(CollaborationOptions.SectionName))
             .Validate(CollaborationOptions.IsValid, "Collaboration settings are out of range or PublicBaseUrl is not an absolute origin.")
-            .Validate(o => emailProvider is not EmailProviders.Smtp || (o.PublicBaseUrl?.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ?? false), "Collaboration:PublicBaseUrl (https) is required when Email:Provider is Smtp.")
+            .Validate(o => emailProvider is not EmailProviders.Smtp || CollaborationOptions.IsUsableForEmail(o.PublicBaseUrl, isLocalEnvironment), "Collaboration:PublicBaseUrl (https; http://localhost allowed in Development/Testing) is required when Email:Provider is Smtp.")
             .ValidateOnStart();
         services.AddScoped<NotificationService>();
         services.AddScoped<IProposalNotifier, ProposalNotifier>();

@@ -63,7 +63,8 @@ All jobs run inside the web application on a timer, are safe to re-run, and do n
 ## Email
 
 - `Email:Provider`: `None` (default, nothing sent), `Smtp` (any SMTP provider), `Log` (Development and Testing only; the recipient is masked in the log).
-- SMTP needs `Email:Smtp:Host`, `Port`, `UserName`, `Email:FromAddress`, an https `Collaboration:PublicBaseUrl`, and the password from the secret store as `Email__Smtp__Password`.
+- SMTP needs `Email:Smtp:Host`, `Port`, `UserName`, `Email:FromAddress`, an https `Collaboration:PublicBaseUrl` (Development may use `http://localhost`), and the password from the secret store as `Email__Smtp__Password`.
+- SendGrid: host `smtp.sendgrid.net`, port 587, user name `apikey`, the API key as the password, and a `FromAddress` verified in SendGrid. Locally these come from `.env`; see docs/LOCAL_SETUP.md section 7a.
 - Check after a change: send yourself an invitation and a password reset. If email fails, invitations still work: the admin sees the link once and can pass it on.
 
 ## Malware scanner
