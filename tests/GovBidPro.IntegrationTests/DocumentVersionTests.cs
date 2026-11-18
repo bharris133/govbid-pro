@@ -207,6 +207,47 @@ public sealed class DocumentVersionTests(PostgresFixture postgres)
     }
 
     [Fact]
+    public async Task Platform_scanner_verdicts_are_read_by_storage_key_and_gate_downloads()
+    {
+        var (world, tenant, _) = await SetupAsync();
+        var platform = new FakePlatformMalwareScanner();
+        world.Scanner = platform;
+        Guid clean;
+        Guid malicious;
+        await using (var db = world.Context(tenant))
+        {
+            var service = world.Documents(db, tenant);
+            clean = (await service.UploadAsync(TestWorld.TextUpload("fine"), CancellationToken.None)).Id;
+            malicious = (await service.UploadAsync(TestWorld.TextUpload("bad"), CancellationToken.None)).Id;
+            Assert.All(await service.ListAsync(CancellationToken.None), d => Assert.Equal(ScanStatus.Pending, d.ScanStatus));
+            var denied = await Assert.ThrowsAsync<PolicyDeniedException>(() => service.OpenDownloadAsync(clean, CancellationToken.None));
+            Assert.Equal("document.scan_not_clean", denied.ReasonCode);
+        }
+
+        var system = PostgresFixture.SystemContext();
+        await using (var db = world.Context(system))
+        {
+            // No verdict from the platform yet: both stay pending.
+            Assert.Equal(new RescanSummary(0, 0, 0, 2, true), await world.Rescan(db, system).RunAsync(10, CancellationToken.None));
+            var keys = await db.DocumentVersions.Where(v => v.DocumentId == clean || v.DocumentId == malicious).ToDictionaryAsync(v => v.DocumentId, v => v.StorageKey);
+            platform.Verdicts[keys[clean]] = ScanStatus.Clean;
+            platform.Verdicts[keys[malicious]] = ScanStatus.Infected;
+            var summary = await world.Rescan(db, system).RunAsync(10, CancellationToken.None);
+            Assert.Equal((2, 1, 1), (summary.Scanned, summary.Clean, summary.Infected));
+        }
+
+        // Verdicts came from the platform; the application never re-read or re-scanned the content.
+        Assert.Equal(2, platform.ContentScans);
+        await using (var db = world.Context(tenant))
+        {
+            var service = world.Documents(db, tenant);
+            Assert.Equal("fine", await ReadAsync(await service.OpenDownloadAsync(clean, CancellationToken.None)));
+            var denied = await Assert.ThrowsAsync<PolicyDeniedException>(() => service.OpenDownloadAsync(malicious, CancellationToken.None));
+            Assert.Equal("document.quarantined", denied.ReasonCode);
+        }
+    }
+
+    [Fact]
     public async Task Purge_removes_every_stored_version()
     {
         var (world, tenant, _) = await SetupAsync();

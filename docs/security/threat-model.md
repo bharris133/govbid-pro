@@ -21,7 +21,7 @@ Scope: the P0 build in this repository. Revisit at each milestone (handoff §9D)
 | T4 | Credential stuffing / brute force | Identity lockout; rate limiting on login and API | Bot protection, breached-password checks (planned) |
 | T5 | Admin account compromise | Separate PlatformAdmin role, MFA required by policy, no tenant data access | Admin access reviews, just-in-time elevation (planned) |
 | T6 | Upload of CUI/FCI/classified content | Declarations; marker detection rejects before storage; Restricted/Prohibited cannot be persisted; quarantine | Detection is best-effort; compressed PDFs not inspected; human escalation workflow (planned) |
-| T7 | Malicious files (malware, polyglots, stored XSS) | Type allowlist with signature checks; downloads as attachments with no-store; no HTML/SVG; downloads denied until scanned | Malware scanner selection (planned) |
+| T7 | Malicious files (malware, polyglots, stored XSS) | Type allowlist with signature checks; downloads as attachments with no-store; no HTML/SVG; downloads denied until scanned | Scanner chosen: ClamAV anywhere, Defender for Storage on Azure (ADR-0005); verify with EICAR after first deployment |
 | T8 | Path traversal in storage | Generated storage keys; key regex and root check in local storage | — |
 | T9 | Sensitive data in logs | Audit and logs carry IDs and reason codes only; problem details are generic | Log redaction tests (planned) |
 | T10 | Fixture data mistaken for live government data | `isLiveSource=false`, `[FIXTURE]` titles, `example.invalid` URLs, UI banners | — |

@@ -12,7 +12,11 @@ public sealed class DocumentRescanOptions
 {
     public const string SectionName = "Documents:Rescan";
 
-    /// <summary>Re-screens stored versions whose scan is Pending (scanner was unreachable) or ScannerNotConfigured.</summary>
+    /// <summary>
+    /// Re-screens stored versions whose scan is Pending (scanner was unreachable, or a platform scanner such as
+    /// Defender for Storage has not reported yet) or ScannerNotConfigured. With a platform scanner, keep the
+    /// interval short (1 minute) because new uploads wait for this job before they can be downloaded.
+    /// </summary>
     public bool Enabled { get; set; } = true;
 
     public int IntervalMinutes { get; set; } = 15;
@@ -53,10 +57,7 @@ public sealed class DocumentRescanService(IAppDbContext db, ITenantContext conte
             ScanStatus result;
             try
             {
-                await using var stream = await storage.OpenReadAsync(version.StorageKey, cancellationToken);
-                using var buffer = new MemoryStream();
-                await stream.CopyToAsync(buffer, cancellationToken);
-                result = await scanner.ScanAsync(buffer.ToArray(), version.FileName, cancellationToken);
+                result = await ScanStoredVersionAsync(version, cancellationToken);
             }
 #pragma warning disable CA1031 // One unreadable object must not stop the batch; it stays pending and is retried.
             catch (Exception ex) when (ex is not OperationCanceledException)
@@ -104,5 +105,19 @@ public sealed class DocumentRescanService(IAppDbContext db, ITenantContext conte
         }
 
         return new RescanSummary(scanned, clean, infected, pending, ScannerAvailable: true);
+    }
+
+    private async Task<ScanStatus> ScanStoredVersionAsync(DocumentVersion version, CancellationToken cancellationToken)
+    {
+        // Platform scanners (for example Defender for Storage) have already scanned the stored object; only the verdict is read.
+        if (scanner is IStoredObjectMalwareScanner platform)
+        {
+            return await platform.GetVerdictAsync(version.StorageKey, cancellationToken);
+        }
+
+        await using var stream = await storage.OpenReadAsync(version.StorageKey, cancellationToken);
+        using var buffer = new MemoryStream();
+        await stream.CopyToAsync(buffer, cancellationToken);
+        return await scanner.ScanAsync(buffer.ToArray(), version.FileName, cancellationToken);
     }
 }

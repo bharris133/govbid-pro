@@ -48,6 +48,12 @@ param logRetentionDays int = 90
 @allowed(['Standard_LRS', 'Standard_ZRS', 'Standard_GRS', 'Standard_GZRS'])
 param storageSkuName string = 'Standard_LRS'
 
+@description('Malware scanning of uploaded documents with Microsoft Defender for Storage (ADR-0005). About US$10 per storage account per month plus about US$0.15 per GB scanned. When false, uploads are stored but never downloadable.')
+param malwareScanningEnabled bool = true
+
+@description('Monthly malware scanning cap (GB) for the documents account; bounds the per-GB cost. Beyond the cap new uploads stay unavailable until the next month.')
+param malwareScanningCapGBPerMonth int = 100
+
 param minReplicas int = 1
 param maxReplicas int = 3
 
@@ -115,6 +121,8 @@ module storage 'modules/storage.bicep' = {
     webIdentityPrincipalId: identity.outputs.principalId
     skuName: storageSkuName
     blobSoftDeleteDays: deletedDocumentRecoveryDays
+    malwareScanningEnabled: malwareScanningEnabled
+    malwareScanningCapGBPerMonth: malwareScanningCapGBPerMonth
   }
 }
 
@@ -132,6 +140,7 @@ module apps 'modules/containerapps.bicep' = {
     connectionSecretUri: keyVault.outputs.connectionSecretUri
     blobServiceUri: storage.outputs.blobServiceUri
     dataProtectionKeyUri: keyVault.outputs.dataProtectionKeyUri
+    malwareScanMode: malwareScanningEnabled ? 'AzureDefender' : 'NotConfigured'
     appInsightsConnectionString: monitoring.outputs.appInsightsConnectionString
     minReplicas: minReplicas
     maxReplicas: maxReplicas

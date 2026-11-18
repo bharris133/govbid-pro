@@ -60,11 +60,12 @@ public static class DependencyInjection
             .ValidateOnStart();
         services.AddOptions<DocumentUploadOptions>().Bind(configuration.GetSection(DocumentUploadOptions.SectionName))
             .Validate(o => o.MaxUploadBytes > 0 && o.MaxDocumentsPerTenant > 0, "Documents:MaxUploadBytes and MaxDocumentsPerTenant must be configured.")
-            .Validate(o => o.MalwareScanMode is "NotConfigured" or "ClamAv" || (o.MalwareScanMode is "DevelopmentBypass" && (environment.IsDevelopment() || environment.IsEnvironment(TestingEnvironment))), "Documents:MalwareScanMode must be NotConfigured, ClamAv or (Development/Testing only) DevelopmentBypass.")
+            .Validate(o => o.MalwareScanMode is MalwareScanModes.NotConfigured or MalwareScanModes.ClamAv or MalwareScanModes.AzureDefender || (o.MalwareScanMode is MalwareScanModes.DevelopmentBypass && (environment.IsDevelopment() || environment.IsEnvironment(TestingEnvironment))), "Documents:MalwareScanMode must be NotConfigured, ClamAv, AzureDefender or (Development/Testing only) DevelopmentBypass.")
+            .Validate(o => o.MalwareScanMode is not MalwareScanModes.AzureDefender || configuration[$"{StorageOptions.SectionName}:Provider"] == StorageProviders.AzureBlob, "Documents:MalwareScanMode AzureDefender requires Storage:Provider AzureBlob (Defender for Storage scans blobs in place).")
             .ValidateOnStart();
         var scanMode = configuration[$"{DocumentUploadOptions.SectionName}:MalwareScanMode"];
         services.AddOptions<ClamAvOptions>().Bind(configuration.GetSection(ClamAvOptions.SectionName))
-            .Validate(o => scanMode != "ClamAv" || ClamAvOptions.IsValid(o), "Documents:ClamAv:Host is required when Documents:MalwareScanMode is ClamAv.")
+            .Validate(o => scanMode != MalwareScanModes.ClamAv || ClamAvOptions.IsValid(o), "Documents:ClamAv:Host is required when Documents:MalwareScanMode is ClamAv.")
             .ValidateOnStart();
         services.AddOptions<DocumentRescanOptions>().Bind(configuration.GetSection(DocumentRescanOptions.SectionName))
             .Validate(o => o.IntervalMinutes is >= 1 and <= 1440 && o.BatchSize is >= 1 and <= 500, "Documents:Rescan interval or batch size is out of range.")
@@ -108,8 +109,10 @@ public static class DependencyInjection
         });
         services.AddSingleton<IMalwareScanner>(sp => sp.GetRequiredService<IOptions<DocumentUploadOptions>>().Value.MalwareScanMode switch
         {
-            "DevelopmentBypass" => new DevelopmentBypassMalwareScanner(),
-            "ClamAv" => ActivatorUtilities.CreateInstance<ClamAvMalwareScanner>(sp),
+            MalwareScanModes.DevelopmentBypass => new DevelopmentBypassMalwareScanner(),
+            MalwareScanModes.ClamAv => ActivatorUtilities.CreateInstance<ClamAvMalwareScanner>(sp),
+            MalwareScanModes.AzureDefender => ActivatorUtilities.CreateInstance<AzureDefenderMalwareScanner>(
+                sp, AzureBlobObjectStorage.CreateContainerClient(sp.GetRequiredService<IOptions<StorageOptions>>().Value)),
             _ => new NotConfiguredMalwareScanner(),
         });
         services.AddScoped<DocumentRescanService>();

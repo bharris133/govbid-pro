@@ -69,7 +69,8 @@ All jobs run inside the web application on a timer, are safe to re-run, and do n
 
 ## Malware scanner
 
-- `Documents:MalwareScanMode`: `NotConfigured` (default; uploads stored, downloads denied), `ClamAv`, `DevelopmentBypass` (Development only).
+- `Documents:MalwareScanMode`: `NotConfigured` (default; uploads stored, downloads denied), `ClamAv`, `AzureDefender` (Azure, set by Bicep), `DevelopmentBypass` (Development only).
+- `AzureDefender`: Azure scans each blob after upload and writes the blob index tag `Malware Scanning scan result`. The rescan job (every minute on Azure) reads it: `No threats found` makes the file available, `Malicious` quarantines it, anything else keeps it pending. If files stay pending, check in the portal (storage account, Microsoft Defender for Cloud) that malware scanning is on and the monthly cap (`malwareScanningCapGBPerMonth`) is not reached, and look for "did not return a verdict" warnings in the app log. If scanning breaks, turning it off and on again in the portal recreates its components; then redeploy the Bicep.
 - If clamd is unreachable, uploads are accepted as pending and cannot be downloaded; the rescan job clears them when the scanner returns. Users see "scan pending", not an error.
 - An infected result blocks the version permanently and is audited. Do not move the file out of storage by hand; follow the incident steps below.
 
